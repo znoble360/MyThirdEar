@@ -1,7 +1,12 @@
 # Basic GitHub Action to compile and test Flutter code
 name: CI
 
-on: [push, pull_request, workflow_dispatch]
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
