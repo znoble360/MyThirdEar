@@ -23,7 +23,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  just_audio: 0.9.7
+  just_audio:
+    git:
+      url: https://github.com/ryanheise/just_audio.git
+      path: just_audio
   audio_session: ^0.1.5
   rxdart: '^0.27.0'
 
