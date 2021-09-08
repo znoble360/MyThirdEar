@@ -40,12 +40,41 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         onError: (Object e, StackTrace stackTrace) {
       print('A stream error occurred: $e');
     });
+
     // Try to load audio from a source and catch any errors.
     try {
+
+      // *DEFAULT*
       // await _player.setAudioSource(AudioSource.uri(Uri.parse(
-      //     "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")));
-      await _player.setAudioSource(AudioSource.uri(Uri.file("/Users/kevin/Documents/githubmusic/musictranscriptiontools/lib/Architects - A Wasted Hymn (Acoustic).mp3")),
+      //     "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")))
+
+      // * a file to test on in lib folder
+      // await _player.setAudioSource(AudioSource.uri(Uri.file("/Users/kevin/Documents/githubmusic/musictranscriptiontools/lib/Architects - A Wasted Hymn (Acoustic).mp3")),
+      //     initialPosition: Duration.zero, preload: true);
+
+      // Implementing file_picker **
+      String s = "";
+      FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+      if(result != null) {
+        PlatformFile file = result.files.first;
+
+        // Display information about the file
+        print(file.name);
+        print(file.bytes);
+        print(file.size);
+        print(file.extension);
+        print(file.path);
+        s = file.path; // create the file path
+      } else {
+        // User canceled the picker
+        print("user cancelled the picker");
+      }
+
+      // set the audio source to the chosen file
+      await _player.setAudioSource(AudioSource.uri(Uri.file(s)),
           initialPosition: Duration.zero, preload: true);
+
     } catch (e) {
       print("Error loading audio source: $e");
     }
