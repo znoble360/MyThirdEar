@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musictranscriptiontools/common.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:file_picker/file_picker.dart';
 
 void main() => runApp(MyApp());
 
@@ -41,8 +42,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     });
     // Try to load audio from a source and catch any errors.
     try {
-      await _player.setAudioSource(AudioSource.uri(Uri.parse(
-          "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")));
+      // await _player.setAudioSource(AudioSource.uri(Uri.parse(
+      //     "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")));
+      await _player.setAudioSource(AudioSource.uri(Uri.file("/Users/kevin/Documents/githubmusic/musictranscriptiontools/lib/Architects - A Wasted Hymn (Acoustic).mp3")),
+          initialPosition: Duration.zero, preload: true);
     } catch (e) {
       print("Error loading audio source: $e");
     }
@@ -203,3 +206,4 @@ class ControlButtons extends StatelessWidget {
     );
   }
 }
+
