@@ -59,7 +59,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       ),
     ),
   ]);
-  int _addedCount = 0;
   GlobalKey<ScaffoldState> _globalKey = GlobalKey();
 
   @override
@@ -72,8 +71,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     ));
     _init();
   }
-
-  doSpeed(bool add) {}
 
   Future<void> _init() async {
     final session = await AudioSession.instance;
