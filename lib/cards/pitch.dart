@@ -56,33 +56,38 @@ class _PitchCardState extends State<PitchCard> {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 150,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Expanded(
-            flex: 3,
-            child: IconButton(
-              icon: Icon(Icons.arrow_drop_down),
-              onPressed: () {
-                setState(() => setNewPitch(-1));
-              },
-            ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Expanded(
+                flex: 3,
+                child: IconButton(
+                  icon: Icon(Icons.arrow_drop_down),
+                  onPressed: () {
+                    setState(() => setNewPitch(-1));
+                  },
+                ),
+              ),
+              Expanded(
+                flex: 4,
+                child: Text(
+                  this.semitone.toString() + "st",
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                  flex: 3,
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_drop_up),
+                    onPressed: () {
+                      setState(() => setNewPitch(1));
+                    },
+                  )),
+            ],
           ),
-          Expanded(
-            flex: 4,
-            child: Text(
-              this.semitone.toString() + "st",
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Expanded(
-              flex: 3,
-              child: IconButton(
-                icon: Icon(Icons.arrow_drop_up),
-                onPressed: () {
-                  setState(() => setNewPitch(1));
-                },
-              )),
+          Text("Pitch"),
         ],
       ),
     );
