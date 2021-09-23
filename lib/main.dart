@@ -9,6 +9,10 @@ import 'package:just_audio/just_audio.dart';
 import 'package:musictranscriptiontools/common.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:file_picker/file_picker.dart';
+import 'dart:async';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
 void main() => runApp(MyApp());
 
@@ -31,6 +35,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> _init() async {
+
+    // Using path provider to get the output path for the created file
+    // *TO-DO: if the raw document path contains spaces this causes errors for ffmpeg execution later.
+    // specifically, in relating to input file name. They are separated by commas in the argument later...
+    Directory appDocumentDir = await getApplicationDocumentsDirectory();
+    String rawDocumentPath = appDocumentDir.path;
+
+    //* TO-DO: instead of /output.mp3, make it something related to the new file later (like the name of the file)
+    String outputPath = rawDocumentPath + "/output.mp3";
+
+    // print(rawDocumentPath + "\n" + outputPath);
+
     // Inform the operating system of our app's audio attributes etc.
     // We pick a reasonable default for an app that plays speech.
     final session = await AudioSession.instance;
@@ -44,20 +60,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Try to load audio from a source and catch any errors.
     try {
 
-      // *DEFAULT*
-      // await _player.setAudioSource(AudioSource.uri(Uri.parse(
-      //     "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")))
+      String inPath = ""; // the input file path on-device
 
-      // * a file to test on in lib folder
-      // await _player.setAudioSource(AudioSource.uri(Uri.file("/Users/kevin/Documents/githubmusic/musictranscriptiontools/lib/Architects - A Wasted Hymn (Acoustic).mp3")),
-      //     initialPosition: Duration.zero, preload: true);
-
-      // Implementing file_picker **
-      String s = "";
+      // Call to open file manager on android and iOS. Choose only one file for now.
+      // *TO-DO: add method to pick multiple files and create multiple output files.
       FilePickerResult? result = await FilePicker.platform.pickFiles();
 
       if(result != null) {
         PlatformFile file = result.files.first;
+
+        inPath = file.path; // get the cached file
 
         // Display information about the file
         print(file.name);
@@ -65,14 +77,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         print(file.size);
         print(file.extension);
         print(file.path);
-        s = file.path; // create the file path
       } else {
         // User canceled the picker
         print("user cancelled the picker");
       }
 
-      // set the audio source to the chosen file
-      await _player.setAudioSource(AudioSource.uri(Uri.file(s)),
+      // Run FFmpeg on this single file and store it in app data folder
+      final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
+      String commandToExecute = "-i " + inPath + " " + outputPath;
+      _flutterFFmpeg.execute(commandToExecute).then((rc) => print("FFmpeg process exited with rc $rc"));
+
+      // Set the audio source given file input path
+      // *TO-DO: for some reason the speed is automatically set to 1.5 unless you restart. Have to fix this.
+      await _player.setAudioSource(AudioSource.uri(Uri.file(outputPath)),
           initialPosition: Duration.zero, preload: true);
 
     } catch (e) {
