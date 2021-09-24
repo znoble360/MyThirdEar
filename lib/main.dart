@@ -81,7 +81,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       print('A stream error occurred: $e');
     });
     try {
-      await _player.setAsset('audio/mary.mp3');
+      await _player.setAsset('audio/440Hz_44100Hz_16bit_30sec.mp3');
     } catch (e) {
       // Catch load errors: 404, invalid url...
       print("Error loading audio source: $e");
