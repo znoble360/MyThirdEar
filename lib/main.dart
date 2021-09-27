@@ -3,14 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musictranscriptiontools/utils/file_handler.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:file_picker/file_picker.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 
-import 'common.dart';
+import 'utils/common.dart';
 
 void main() => runApp(MyApp());
 
@@ -21,50 +20,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late AudioPlayer _player;
-  final _playlist = ConcatenatingAudioSource(children: [
-    ClippingAudioSource(
-      start: Duration(seconds: 60),
-      end: Duration(seconds: 90),
-      child: AudioSource.uri(Uri.parse(
-          "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")),
-      tag: AudioMetadata(
-        album: "Science Friday",
-        title: "A Salute To Head-Scratching Science (30 seconds)",
-        artwork:
-            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-      ),
-    ),
-    AudioSource.uri(
-      Uri.parse(
-          "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3"),
-      tag: AudioMetadata(
-        album: "Science Friday",
-        title: "A Salute To Head-Scratching Science",
-        artwork:
-            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-      ),
-    ),
-    AudioSource.uri(
-      Uri.parse("https://s3.amazonaws.com/scifri-segments/scifri201711241.mp3"),
-      tag: AudioMetadata(
-        album: "Science Friday",
-        title: "From Cat Rheology To Operatic Incompetence",
-        artwork:
-            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-      ),
-    ),
-    AudioSource.uri(
-      Uri.parse("asset:///audio/nature.mp3"),
-      tag: AudioMetadata(
-        album: "Public Domain",
-        title: "Nature Sounds",
-        artwork:
-            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
-      ),
-    ),
-  ]);
-  int _addedCount = 0;
   GlobalKey<ScaffoldState> _globalKey = GlobalKey();
+  String _outputPath = "";
 
   @override
   void initState() {
@@ -77,24 +34,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _init();
   }
 
-  doSpeed(bool add) {}
-
   Future<void> _init() async {
-
     // Using path provider to get the output path for the created file
-    // *TO-DO: if the raw document path contains spaces this causes errors for ffmpeg execution later.
+    // TODO: if the raw document path contains spaces this causes errors for ffmpeg execution later.
     // specifically, in relating to input file name. They are separated by commas in the argument later...
     Directory appDocumentDir = await getApplicationDocumentsDirectory();
     String rawDocumentPath = appDocumentDir.path;
 
-    //* TO-DO: instead of /output.mp3, make it something related to the new file later (like the name of the file)
-    String outputPath = rawDocumentPath + "/checkagain.mp3";
-
-    // print(rawDocumentPath + "\n" + outputPath);
+    // TODO: instead of /output.mp3, make it something related to the new file later (like the name of the file)
+    _outputPath = rawDocumentPath + "/checkagain.mp3";
 
     // Inform the operating system of our app's audio attributes etc.
     // We pick a reasonable default for an app that plays speech.
-
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
     // Listen to errors during playback.
@@ -102,47 +53,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         onError: (Object e, StackTrace stackTrace) {
       print('A stream error occurred: $e');
     });
-
-    // Try to load audio from a source and catch any errors.
-    try {
-
-      String inPath = ""; // the input file path on-device
-
-      // Call to open file manager on android and iOS. Choose only one file for now.
-      // *TO-DO: add method to pick multiple files and create multiple output files.
-      FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-      if(result != null) {
-        PlatformFile file = result.files.first;
-
-        inPath = file.path; // get the cached file
-
-        // Display information about the file
-        print(file.name);
-        print(file.bytes);
-        print(file.size);
-        print(file.extension);
-        print(file.path);
-      } else {
-        // User canceled the picker
-        print("user cancelled the picker");
-      }
-
-      // Run FFmpeg on this single file and store it in app data folder
-      final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
-      String commandToExecute = "-i " + inPath + " " + outputPath;
-      _flutterFFmpeg.execute(commandToExecute).then((rc) => print("FFmpeg process exited with rc $rc"));
-
-      // Set the audio source given file input path
-      // *TO-DO: for some reason the speed is automatically set to 1.5 unless you restart. Have to fix this.
-      try {
-        await _player.setAudioSource(AudioSource.uri(Uri.file(outputPath)),
-          initialPosition: Duration.zero, preload: true);
-      } catch (e) {
-          // Catch load errors: 404, invalid url...
-          print("Error loading audio source: $e");
-        }
-      }
+  }
 
   @override
   void dispose() {
@@ -175,58 +86,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         key: _globalKey,
-        drawer: Drawer(
-            child: Column(
-          children: [
-            SizedBox(height: 60),
-            Text('Setting'),
-            Container(
-              height: 240.0,
-              padding: EdgeInsets.only(top: 20),
-              child: StreamBuilder<SequenceState?>(
-                stream: _player.sequenceStateStream,
-                builder: (context, snapshot) {
-                  final state = snapshot.data;
-                  final sequence = state?.sequence ?? [];
-                  return ReorderableListView(
-                    onReorder: (int oldIndex, int newIndex) {
-                      if (oldIndex < newIndex) newIndex--;
-                      _playlist.move(oldIndex, newIndex);
-                    },
-                    children: [
-                      for (var i = 0; i < sequence.length; i++)
-                        Dismissible(
-                          key: ValueKey(sequence[i]),
-                          background: Container(
-                            color: Colors.redAccent,
-                            alignment: Alignment.centerRight,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Icon(Icons.delete, color: Colors.white),
-                            ),
-                          ),
-                          onDismissed: (dismissDirection) {
-                            _playlist.removeAt(i);
-                          },
-                          child: Material(
-                            color: i == state!.currentIndex
-                                ? Colors.grey.shade300
-                                : null,
-                            child: ListTile(
-                              title: Text(sequence[i].tag.title as String),
-                              onTap: () {
-                                _player.seek(Duration.zero, index: i);
-                              },
-                            ),
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
-        )),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            selectFileForPlayer(_player, _outputPath);
+          },
+          child: const Icon(Icons.file_upload),
+          backgroundColor: Colors.yellowAccent,
+        ),
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,16 +314,4 @@ class ControlButtons extends StatelessWidget {
       ],
     );
   }
-}
-
-class AudioMetadata {
-  final String album;
-  final String title;
-  final String artwork;
-
-  AudioMetadata({
-    required this.album,
-    required this.title,
-    required this.artwork,
-  });
 }
