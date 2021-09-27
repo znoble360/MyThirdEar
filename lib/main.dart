@@ -3,7 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musictranscriptiontools/utils/file_handler.dart';
+import 'package:musictranscriptiontools/cards/pitch.dart';
+import 'package:musictranscriptiontools/cards/speed.dart';
+import 'package:musictranscriptiontools/utils/file_handler.dart'
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
@@ -177,7 +179,6 @@ class ControlButtons extends StatelessWidget {
                 ],
               ),
             ),
-
             StreamBuilder<PlayerState>(
               stream: player.playerStateStream,
               builder: (context, snapshot) {
@@ -224,93 +225,15 @@ class ControlButtons extends StatelessWidget {
                 ),
               ),
             ),
-            StreamBuilder<double>(
-              stream: player.speedStream,
-              builder: (context, snapshot) => IconButton(
-                icon: Text("${snapshot.data?.toStringAsFixed(1)}x",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                onPressed: () {
-                  showSliderDialog(
-                    context: context,
-                    title: "Adjust speed",
-                    divisions: 10,
-                    min: 0.5,
-                    max: 1.5,
-                    value: player.speed,
-                    stream: player.speedStream,
-                    onChanged: player.setSpeed,
-                  );
-                },
-              ),
-            ),
-            // Text('Pitch', style: TextStyle(fontWeight: FontWeight.bold))
           ],
         ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.minimize),
-                  onPressed: () {
-                    if (player.speed > 0.5) {
-                      var speed = player.speed - 0.1;
-                      player.setSpeed(speed);
-                    }
-                  },
-                ),
-                SizedBox(width: 60),
-                IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: () {
-                    if (player.speed < 1.5) {
-                      var speed = player.speed + 0.1;
-                      player.setSpeed(speed);
-                    }
-                  },
-                ),
-              ],
-            ),
-            Icon(Icons.repeat, color: Colors.grey),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_drop_down),
-                  onPressed: () {
-                    if (player.pitch > 0) {
-                      var newPitch = player.pitch - 0.1;
-                      player.setPitch(newPitch);
-                      debugPrint('$newPitch');
-                    }
-                  },
-                ),
-                SizedBox(width: 60),
-                IconButton(
-                  icon: Icon(Icons.arrow_drop_up),
-                  onPressed: () {
-                    if (player.pitch < 1.5) {
-                      var newPitch = player.pitch + 0.1;
-                      player.setPitch(newPitch);
-                      debugPrint('$newPitch');
-                    }
-                  },
-                ),
-              ],
-            ),
+            SpeedCard(player),
+            PitchCard(player),
           ],
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Container(padding: EdgeInsets.only(left: 15), child: Text('Speed')),
-            Icon(Icons.dns, color: Colors.grey),
-            Container(
-                padding: EdgeInsets.only(right: 15), child: Text('Pitch')),
-          ],
-        )
       ],
     );
   }
