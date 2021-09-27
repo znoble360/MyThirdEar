@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:musictranscriptiontools/cards/pitch.dart';
+import 'package:musictranscriptiontools/cards/speed.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'common.dart';
@@ -30,8 +32,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       ),
     ),
     AudioSource.uri(
-      Uri.parse(
-          "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3"),
+      Uri.parse("asset:///audio/mary.mp3"),
       tag: AudioMetadata(
         album: "Science Friday",
         title: "A Salute To Head-Scratching Science",
@@ -58,7 +59,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       ),
     ),
   ]);
-  int _addedCount = 0;
   GlobalKey<ScaffoldState> _globalKey = GlobalKey();
 
   @override
@@ -72,8 +72,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     _init();
   }
 
-  doSpeed(bool add) {}
-
   Future<void> _init() async {
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
@@ -83,7 +81,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       print('A stream error occurred: $e');
     });
     try {
-      await _player.setAudioSource(_playlist);
+      await _player.setAsset('audio/440Hz_44100Hz_16bit_30sec.mp3');
     } catch (e) {
       // Catch load errors: 404, invalid url...
       print("Error loading audio source: $e");
@@ -257,7 +255,6 @@ class ControlButtons extends StatelessWidget {
                 ],
               ),
             ),
-
             StreamBuilder<PlayerState>(
               stream: player.playerStateStream,
               builder: (context, snapshot) {
@@ -304,93 +301,15 @@ class ControlButtons extends StatelessWidget {
                 ),
               ),
             ),
-            StreamBuilder<double>(
-              stream: player.speedStream,
-              builder: (context, snapshot) => IconButton(
-                icon: Text("${snapshot.data?.toStringAsFixed(1)}x",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
-                onPressed: () {
-                  showSliderDialog(
-                    context: context,
-                    title: "Adjust speed",
-                    divisions: 10,
-                    min: 0.5,
-                    max: 1.5,
-                    value: player.speed,
-                    stream: player.speedStream,
-                    onChanged: player.setSpeed,
-                  );
-                },
-              ),
-            ),
-            // Text('Pitch', style: TextStyle(fontWeight: FontWeight.bold))
           ],
         ),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.minimize),
-                  onPressed: () {
-                    if (player.speed > 0.5) {
-                      var speed = player.speed - 0.1;
-                      player.setSpeed(speed);
-                    }
-                  },
-                ),
-                SizedBox(width: 60),
-                IconButton(
-                  icon: Icon(Icons.add),
-                  onPressed: () {
-                    if (player.speed < 1.5) {
-                      var speed = player.speed + 0.1;
-                      player.setSpeed(speed);
-                    }
-                  },
-                ),
-              ],
-            ),
-            Icon(Icons.repeat, color: Colors.grey),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_drop_down),
-                  onPressed: () {
-                    if (player.pitch > 0) {
-                      var newPitch = player.pitch - 0.1;
-                      player.setPitch(newPitch);
-                      debugPrint('$newPitch');
-                    }
-                  },
-                ),
-                SizedBox(width: 60),
-                IconButton(
-                  icon: Icon(Icons.arrow_drop_up),
-                  onPressed: () {
-                    if (player.pitch < 1.5) {
-                      var newPitch = player.pitch + 0.1;
-                      player.setPitch(newPitch);
-                      debugPrint('$newPitch');
-                    }
-                  },
-                ),
-              ],
-            ),
+            SpeedCard(player),
+            PitchCard(player),
           ],
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Container(padding: EdgeInsets.only(left: 15), child: Text('Speed')),
-            Icon(Icons.dns, color: Colors.grey),
-            Container(
-                padding: EdgeInsets.only(right: 15), child: Text('Pitch')),
-          ],
-        )
       ],
     );
   }
