@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musictranscriptiontools/cards/pitch.dart';
 import 'package:musictranscriptiontools/cards/speed.dart';
-import 'package:musictranscriptiontools/utils/file_handler.dart'
+import 'package:musictranscriptiontools/utils/file_handler.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
@@ -37,17 +37,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> _init() async {
-    // Using path provider to get the output path for the created file
-    // TODO: if the raw document path contains spaces this causes errors for ffmpeg execution later.
-    // specifically, in relating to input file name. They are separated by commas in the argument later...
+    // Open Documents Directory
     Directory appDocumentDir = await getApplicationDocumentsDirectory();
     String rawDocumentPath = appDocumentDir.path;
 
-    // TODO: instead of /output.mp3, make it something related to the new file later (like the name of the file)
-    _outputPath = rawDocumentPath + "/checkagain.mp3";
+    _outputPath = rawDocumentPath;
 
-    // Inform the operating system of our app's audio attributes etc.
-    // We pick a reasonable default for an app that plays speech.
+    // TODO: To write an mp3, get the path first and then write as bytes as shown here: https://pub.dev/documentation/mp3editor/latest/
+
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
     // Listen to errors during playback.

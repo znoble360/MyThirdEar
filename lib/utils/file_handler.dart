@@ -19,9 +19,14 @@ void selectFileForPlayer(AudioPlayer player, String savePath) async {
       return;
     }
 
+    // Replace extension for savePath if not an mp3 file
+    String ext = inPath.substring(inPath.lastIndexOf('.'));
+    savePath = inPath.replaceAll(ext, ".mp3");
+
     // Run FFmpeg on this single file and store it in app data folder
     final FlutterFFmpeg flutterFFmpeg = new FlutterFFmpeg();
-    String commandToExecute = '-i $inPath $savePath';
+    String commandToExecute = '-i ' + "\'"+ inPath + "\'" + " " + "\'"+savePath+"\'";
+    print("command to execute" + commandToExecute);
     flutterFFmpeg
         .execute(commandToExecute)
         .then((rc) => print("FFmpeg process exited with rc $rc"));

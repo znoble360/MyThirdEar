@@ -36,12 +36,12 @@ PODS:
     - DKImagePickerController/PhotoGallery
     - Flutter
   - Flutter (1.0.0)
-  - flutter_ffmpeg/min-lts (0.4.2):
+  - flutter_ffmpeg/full-lts (0.4.2):
     - Flutter
-    - mobile-ffmpeg-min (= 4.4.LTS)
+    - mobile-ffmpeg-full (= 4.4.LTS)
   - just_audio (0.0.1):
     - Flutter
-  - mobile-ffmpeg-min (4.4.LTS)
+  - mobile-ffmpeg-full (4.4.LTS)
   - path_provider (0.0.1):
     - Flutter
   - SDWebImage (5.11.1):
@@ -53,7 +53,7 @@ DEPENDENCIES:
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
-  - flutter_ffmpeg/min-lts (from `.symlinks/plugins/flutter_ffmpeg/ios`)
+  - flutter_ffmpeg/full-lts (from `.symlinks/plugins/flutter_ffmpeg/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
 
@@ -61,7 +61,7 @@ SPEC REPOS:
   trunk:
     - DKImagePickerController
     - DKPhotoGallery
-    - mobile-ffmpeg-min
+    - mobile-ffmpeg-full
     - SDWebImage
     - SwiftyGif
 
@@ -84,14 +84,14 @@ SPEC CHECKSUMS:
   DKImagePickerController: b5eb7f7a388e4643264105d648d01f727110fc3d
   DKPhotoGallery: fdfad5125a9fdda9cc57df834d49df790dbb4179
   file_picker: 3e6c3790de664ccf9b882732d9db5eaf6b8d4eb1
-  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   flutter_ffmpeg: 3ec3912c74649851e6c3b1885511eef78142ac4f
   just_audio: baa7252489dbcf47a4c7cc9ca663e9661c99aafa
-  mobile-ffmpeg-min: dd2fd38da2788ccb7be5720fc308cb69160820e7
+  mobile-ffmpeg-full: f17c82219b4ff9e4018b5e21f88b78c28a3475db
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SwiftyGif: 5d4af95df24caf1c570dbbcb32a3b8a0763bc6d7
 
-PODFILE CHECKSUM: 5ce600a4fe351a1d7eb6b091f8f112345aceaa69
+PODFILE CHECKSUM: 60fc75e4f7fcba1d6ae12318723b3a5741030cbe
 
 COCOAPODS: 1.11.2
