@@ -115,7 +115,6 @@ class Wav {
     // numFrames
     numFrames = dataSize / (bitsPerSample * numChannels);
     numFrames = numFrames.round();
-    //print("numFrames:" + numFrames.toString());
 
     // initialize waveform
     waveform = new List();
@@ -123,13 +122,9 @@ class Wav {
       waveform.add(new List());
     }
 
-    // parse waveform data
-    //print('');
-    //print('Data:');
     var intView = _dataToList(wav, dataStart, bitsPerSample);
-    //var intView = [0,1,2,3,4,5,6,7,8,9];
-    //print(intView.toString());
 
+    // stores samples into waveform array
     for (int i = 0; i < numChannels; i++) {
       for (int j = 0; j < numFrames; j++) {
         if (i+j*numChannels < intView.length) {
@@ -137,12 +132,6 @@ class Wav {
         }
       }
     }
-
-    //print(waveform[0].toString());
-    //print(waveform[1].toString());
-    //var intView = Int16List.sublistView(wav, dataStart);
-    //print(intView);
-
   }
 
   void printHeader() {
@@ -185,6 +174,4 @@ class Wav {
         throw Exception("Unexpected sample bit size");
     }
   }
-
-  
 }
