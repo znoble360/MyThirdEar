@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musictranscriptiontools/cards/pitch.dart';
 import 'package:musictranscriptiontools/cards/speed.dart';
-import 'package:musictranscriptiontools/utils/file_handler.dart'
+import 'package:musictranscriptiontools/utils/file_handler.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
