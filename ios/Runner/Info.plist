@@ -41,5 +41,23 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<!-- if using FileType.any or FileType.custom -->
+	<key>UIBackgroundModes</key>
+    <array>
+       <string>fetch</string>
+       <string>remote-notification</string>
+    </array>
+    <!-- if using FileType.audio in apple music -->
+    <key>NSAppleMusicUsageDescription</key>
+    <string>Explain why your app uses music</string>
+    <!-- if you want to write to directories -->
+    <key>UISupportsDocumentBrowser</key>
+    <true/>
+    <!-- open file instead of caching it (FileType.all) -->
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <true/>
+    <!-- if using FileType.image or FileType.video -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Explain why your app uses photo library</string>
 </dict>
 </plist>
