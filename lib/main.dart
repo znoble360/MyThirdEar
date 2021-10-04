@@ -1,13 +1,13 @@
-// This is a minimal example demonstrating a play/pause button and a seek bar.
-// More advanced examples demonstrating other features can be found in the same
-// directory as this example in the GitHub repository.
-
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musictranscriptiontools/common.dart';
+import 'package:musictranscriptiontools/cards/pitch.dart';
+import 'package:musictranscriptiontools/cards/speed.dart';
 import 'package:rxdart/rxdart.dart';
+
+import 'common.dart';
 
 void main() => runApp(MyApp());
 
@@ -17,12 +17,55 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-  final _player = AudioPlayer();
+  late AudioPlayer _player;
+  final _playlist = ConcatenatingAudioSource(children: [
+    ClippingAudioSource(
+      start: Duration(seconds: 60),
+      end: Duration(seconds: 90),
+      child: AudioSource.uri(Uri.parse(
+          "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")),
+      tag: AudioMetadata(
+        album: "Science Friday",
+        title: "A Salute To Head-Scratching Science (30 seconds)",
+        artwork:
+            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
+      ),
+    ),
+    AudioSource.uri(
+      Uri.parse("asset:///audio/mary.mp3"),
+      tag: AudioMetadata(
+        album: "Science Friday",
+        title: "A Salute To Head-Scratching Science",
+        artwork:
+            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
+      ),
+    ),
+    AudioSource.uri(
+      Uri.parse("https://s3.amazonaws.com/scifri-segments/scifri201711241.mp3"),
+      tag: AudioMetadata(
+        album: "Science Friday",
+        title: "From Cat Rheology To Operatic Incompetence",
+        artwork:
+            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
+      ),
+    ),
+    AudioSource.uri(
+      Uri.parse("asset:///audio/nature.mp3"),
+      tag: AudioMetadata(
+        album: "Public Domain",
+        title: "Nature Sounds",
+        artwork:
+            "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
+      ),
+    ),
+  ]);
+  GlobalKey<ScaffoldState> _globalKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance?.addObserver(this);
+    _player = AudioPlayer();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black,
     ));
@@ -30,8 +73,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   Future<void> _init() async {
-    // Inform the operating system of our app's audio attributes etc.
-    // We pick a reasonable default for an app that plays speech.
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
     // Listen to errors during playback.
@@ -39,11 +80,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         onError: (Object e, StackTrace stackTrace) {
       print('A stream error occurred: $e');
     });
-    // Try to load audio from a source and catch any errors.
     try {
-      await _player.setAudioSource(AudioSource.uri(Uri.parse(
-          "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")));
+      await _player.setAsset('audio/440Hz_44100Hz_16bit_30sec.mp3');
     } catch (e) {
+      // Catch load errors: 404, invalid url...
       print("Error loading audio source: $e");
     }
   }
@@ -51,8 +91,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);
-    // Release decoders and buffers back to the operating system making them
-    // available for other apps to use.
     _player.dispose();
     super.dispose();
   }
@@ -67,8 +105,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  /// Collects the data useful for displaying in a seek bar, using a handy
-  /// feature of rx_dart to combine the 3 streams of interest into one.
   Stream<PositionData> get _positionDataStream =>
       Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
           _player.positionStream,
@@ -82,15 +118,77 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        key: _globalKey,
+        drawer: Drawer(
+            child: Column(
+          children: [
+            SizedBox(height: 60),
+            Text('Setting'),
+            Container(
+              height: 240.0,
+              padding: EdgeInsets.only(top: 20),
+              child: StreamBuilder<SequenceState?>(
+                stream: _player.sequenceStateStream,
+                builder: (context, snapshot) {
+                  final state = snapshot.data;
+                  final sequence = state?.sequence ?? [];
+                  return ReorderableListView(
+                    onReorder: (int oldIndex, int newIndex) {
+                      if (oldIndex < newIndex) newIndex--;
+                      _playlist.move(oldIndex, newIndex);
+                    },
+                    children: [
+                      for (var i = 0; i < sequence.length; i++)
+                        Dismissible(
+                          key: ValueKey(sequence[i]),
+                          background: Container(
+                            color: Colors.redAccent,
+                            alignment: Alignment.centerRight,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: Icon(Icons.delete, color: Colors.white),
+                            ),
+                          ),
+                          onDismissed: (dismissDirection) {
+                            _playlist.removeAt(i);
+                          },
+                          child: Material(
+                            color: i == state!.currentIndex
+                                ? Colors.grey.shade300
+                                : null,
+                            child: ListTile(
+                              title: Text(sequence[i].tag.title as String),
+                              onTap: () {
+                                _player.seek(Duration.zero, index: i);
+                              },
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
+        )),
         body: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // Display play/pause button and volume/speed sliders.
-              ControlButtons(_player),
-              // Display seek bar. Using StreamBuilder, this widget rebuilds
-              // each time the position, buffered position or duration changes.
+              GestureDetector(
+                  onTap: () {
+                    _globalKey.currentState?.openDrawer();
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(15),
+                    child: Icon(Icons.dehaze, color: Colors.grey),
+                  )),
+              SizedBox(height: 8.0),
+              Row(
+                children: [],
+              ),
+              SizedBox(height: 400),
               StreamBuilder<PositionData>(
                 stream: _positionDataStream,
                 builder: (context, snapshot) {
@@ -100,10 +198,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     position: positionData?.position ?? Duration.zero,
                     bufferedPosition:
                         positionData?.bufferedPosition ?? Duration.zero,
-                    onChangeEnd: _player.seek,
+                    onChangeEnd: (newPosition) {
+                      _player.seek(newPosition);
+                    },
                   );
                 },
               ),
+              ControlButtons(_player),
             ],
           ),
         ),
@@ -112,7 +213,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 }
 
-/// Displays the play/pause button and volume/speed sliders.
 class ControlButtons extends StatelessWidget {
   final AudioPlayer player;
 
@@ -120,86 +220,109 @@ class ControlButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Column(
       children: [
-        // Opens volume slider dialog
-        IconButton(
-          icon: Icon(Icons.volume_up),
-          onPressed: () {
-            showSliderDialog(
-              context: context,
-              title: "Adjust volume",
-              divisions: 10,
-              min: 0.0,
-              max: 1.0,
-              value: player.volume,
-              stream: player.volumeStream,
-              onChanged: player.setVolume,
-            );
-          },
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 120,
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.volume_up),
+                    onPressed: () {
+                      showSliderDialog(
+                        context: context,
+                        title: "Adjust volume",
+                        divisions: 10,
+                        min: 0.0,
+                        max: 1.0,
+                        value: player.volume,
+                        stream: player.volumeStream,
+                        onChanged: player.setVolume,
+                      );
+                    },
+                  ),
+                  StreamBuilder<SequenceState?>(
+                    stream: player.sequenceStateStream,
+                    builder: (context, snapshot) => IconButton(
+                      icon: Icon(Icons.skip_previous),
+                      onPressed:
+                          player.hasPrevious ? player.seekToPrevious : null,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            StreamBuilder<PlayerState>(
+              stream: player.playerStateStream,
+              builder: (context, snapshot) {
+                final playerState = snapshot.data;
+                final processingState = playerState?.processingState;
+                final playing = playerState?.playing;
+                if (processingState == ProcessingState.loading ||
+                    processingState == ProcessingState.buffering) {
+                  return Container(
+                    margin: EdgeInsets.all(8.0),
+                    // width: 64.0,
+                    // height: 64.0,
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (playing != true) {
+                  return IconButton(
+                    icon: Icon(Icons.play_arrow),
+                    //iconSize: 64.0,
+                    onPressed: player.play,
+                  );
+                } else if (processingState != ProcessingState.completed) {
+                  return IconButton(
+                    icon: Icon(Icons.pause),
+                    //iconSize: 64.0,
+                    onPressed: player.pause,
+                  );
+                } else {
+                  return IconButton(
+                    icon: Icon(Icons.replay),
+                    //iconSize: 64.0,
+                    onPressed: () => player.seek(Duration.zero,
+                        index: player.effectiveIndices!.first),
+                  );
+                }
+              },
+            ),
+            Container(
+              width: 100,
+              child: StreamBuilder<SequenceState?>(
+                stream: player.sequenceStateStream,
+                builder: (context, snapshot) => IconButton(
+                  icon: Icon(Icons.skip_next),
+                  onPressed: player.hasNext ? player.seekToNext : null,
+                ),
+              ),
+            ),
+          ],
         ),
-
-        /// This StreamBuilder rebuilds whenever the player state changes, which
-        /// includes the playing/paused state and also the
-        /// loading/buffering/ready state. Depending on the state we show the
-        /// appropriate button or loading indicator.
-        StreamBuilder<PlayerState>(
-          stream: player.playerStateStream,
-          builder: (context, snapshot) {
-            final playerState = snapshot.data;
-            final processingState = playerState?.processingState;
-            final playing = playerState?.playing;
-            if (processingState == ProcessingState.loading ||
-                processingState == ProcessingState.buffering) {
-              return Container(
-                margin: EdgeInsets.all(8.0),
-                width: 64.0,
-                height: 64.0,
-                child: CircularProgressIndicator(),
-              );
-            } else if (playing != true) {
-              return IconButton(
-                icon: Icon(Icons.play_arrow),
-                iconSize: 64.0,
-                onPressed: player.play,
-              );
-            } else if (processingState != ProcessingState.completed) {
-              return IconButton(
-                icon: Icon(Icons.pause),
-                iconSize: 64.0,
-                onPressed: player.pause,
-              );
-            } else {
-              return IconButton(
-                icon: Icon(Icons.replay),
-                iconSize: 64.0,
-                onPressed: () => player.seek(Duration.zero),
-              );
-            }
-          },
-        ),
-        // Opens speed slider dialog
-        StreamBuilder<double>(
-          stream: player.speedStream,
-          builder: (context, snapshot) => IconButton(
-            icon: Text("${snapshot.data?.toStringAsFixed(1)}x",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            onPressed: () {
-              showSliderDialog(
-                context: context,
-                title: "Adjust speed",
-                divisions: 10,
-                min: 0.5,
-                max: 1.5,
-                value: player.speed,
-                stream: player.speedStream,
-                onChanged: player.setSpeed,
-              );
-            },
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            SpeedCard(player),
+            PitchCard(player),
+          ],
         ),
       ],
     );
   }
+}
+
+class AudioMetadata {
+  final String album;
+  final String title;
+  final String artwork;
+
+  AudioMetadata({
+    required this.album,
+    required this.title,
+    required this.artwork,
+  });
 }
