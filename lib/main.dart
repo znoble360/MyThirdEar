@@ -5,7 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:musictranscriptiontools/cards/pitch.dart';
 import 'package:musictranscriptiontools/cards/speed.dart';
+import 'package:musictranscriptiontools/cards/waveform.dart';
 import 'package:musictranscriptiontools/utils/file_handler.dart';
+import 'package:musictranscriptiontools/utils/waveform.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
@@ -109,7 +111,21 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               Row(
                 children: [],
               ),
-              SizedBox(height: 400),
+              SizedBox(
+                height: 400,
+                child: FutureBuilder<WaveformData>(
+                  future: loadWaveformData("audio/data.dat"),
+                  builder: (context, AsyncSnapshot<WaveformData> snapshot) {
+                    if (snapshot.hasData) {
+                      return PaintedWaveform(sampleData: snapshot.data);
+                    } else if (snapshot.hasError) {
+                      return Text("Error ${snapshot.error}",
+                          style: TextStyle(color: Colors.red));
+                    }
+                    return CircularProgressIndicator();
+                  },
+                ),
+              ),
               StreamBuilder<PositionData>(
                 stream: _positionDataStream,
                 builder: (context, snapshot) {
