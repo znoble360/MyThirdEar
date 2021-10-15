@@ -22,6 +22,43 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late AudioPlayer _player;
+<<<<<<< Updated upstream
+=======
+  final _playlist = ConcatenatingAudioSource(children: [
+    ClippingAudioSource(
+      start: Duration(seconds: 60),
+      end: Duration(seconds: 90),
+      child: AudioSource.uri(Uri.parse(
+          "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3")),
+      tag: AudioMetadata(
+        album: "Science Friday",
+        title: "A Salute To Head-Scratching Science (30 seconds)",
+        artwork:
+        "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
+      ),
+    ),
+    AudioSource.uri(
+      Uri.parse(
+          "https://s3.amazonaws.com/scifri-episodes/scifri20181123-episode.mp3"),
+      tag: AudioMetadata(
+        album: "Science Friday",
+        title: "A Salute To Head-Scratching Science",
+        artwork:
+        "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
+      ),
+    ),
+    AudioSource.uri(
+      Uri.parse("https://s3.amazonaws.com/scifri-segments/scifri201711241.mp3"),
+      tag: AudioMetadata(
+        album: "Science Friday",
+        title: "From Cat Rheology To Operatic Incompetence",
+        artwork:
+        "https://media.wnyc.org/i/1400/1400/l/80/1/ScienceFriday_WNYCStudios_1400.jpg",
+      ),
+    ),
+  ]);
+  int _addedCount = 0;
+>>>>>>> Stashed changes
   GlobalKey<ScaffoldState> _globalKey = GlobalKey();
   String _outputPath = "";
 
@@ -50,8 +87,19 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Listen to errors during playback.
     _player.playbackEventStream.listen((event) {},
         onError: (Object e, StackTrace stackTrace) {
+<<<<<<< Updated upstream
       print('A stream error occurred: $e');
     });
+=======
+          print('A stream error occurred: $e');
+        });
+    try {
+      await _player.setAudioSource(_playlist);
+    } catch (e) {
+      // Catch load errors: 404, invalid url...
+      print("Error loading audio source: $e");
+    }
+>>>>>>> Stashed changes
   }
 
   @override
@@ -76,7 +124,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           _player.positionStream,
           _player.bufferedPositionStream,
           _player.durationStream,
-          (position, bufferedPosition, duration) => PositionData(
+              (position, bufferedPosition, duration) => PositionData(
               position, bufferedPosition, duration ?? Duration.zero));
 
   @override
@@ -85,6 +133,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         key: _globalKey,
+<<<<<<< Updated upstream
         floatingActionButton: FloatingActionButton(
           onPressed: () {
             selectFileForPlayer(_player, _outputPath);
@@ -92,6 +141,60 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           child: const Icon(Icons.file_upload),
           backgroundColor: Colors.yellowAccent,
         ),
+=======
+        drawer: Drawer(
+            child: Column(
+              children: [
+                SizedBox(height: 60),
+                Text('Setting'),
+                Container(
+                  height: 240.0,
+                  padding: EdgeInsets.only(top: 20),
+                  child: StreamBuilder<SequenceState?>(
+                    stream: _player.sequenceStateStream,
+                    builder: (context, snapshot) {
+                      final state = snapshot.data;
+                      final sequence = state?.sequence ?? [];
+                      return ReorderableListView(
+                        onReorder: (int oldIndex, int newIndex) {
+                          if (oldIndex < newIndex) newIndex--;
+                          _playlist.move(oldIndex, newIndex);
+                        },
+                        children: [
+                          for (var i = 0; i < sequence.length; i++)
+                            Dismissible(
+                              key: ValueKey(sequence[i]),
+                              background: Container(
+                                color: Colors.redAccent,
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Icon(Icons.delete, color: Colors.white),
+                                ),
+                              ),
+                              onDismissed: (dismissDirection) {
+                                _playlist.removeAt(i);
+                              },
+                              child: Material(
+                                color: i == state!.currentIndex
+                                    ? Colors.grey.shade300
+                                    : null,
+                                child: ListTile(
+                                  title: Text(sequence[i].tag.title as String),
+                                  onTap: () {
+                                    _player.seek(Duration.zero, index: i);
+                                  },
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+            )),
+>>>>>>> Stashed changes
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,7 +221,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     duration: positionData?.duration ?? Duration.zero,
                     position: positionData?.position ?? Duration.zero,
                     bufferedPosition:
-                        positionData?.bufferedPosition ?? Duration.zero,
+                    positionData?.bufferedPosition ?? Duration.zero,
                     onChangeEnd: (newPosition) {
                       _player.seek(newPosition);
                     },
@@ -170,7 +273,7 @@ class ControlButtons extends StatelessWidget {
                     builder: (context, snapshot) => IconButton(
                       icon: Icon(Icons.skip_previous),
                       onPressed:
-                          player.hasPrevious ? player.seekToPrevious : null,
+                      player.hasPrevious ? player.seekToPrevious : null,
                     ),
                   ),
                 ],
@@ -235,3 +338,18 @@ class ControlButtons extends StatelessWidget {
     );
   }
 }
+<<<<<<< Updated upstream
+=======
+
+class AudioMetadata {
+  final String album;
+  final String title;
+  final String artwork;
+
+  AudioMetadata({
+    required this.album,
+    required this.title,
+    required this.artwork,
+  });
+}
+>>>>>>> Stashed changes
