@@ -107,6 +107,7 @@ class Wav {
 
     if (String.fromCharCodes(temp) != 'data') {
       print('warning: unexpected wav format "' + String.fromCharCodes(temp) + '"');
+      throw("Unexpected wav format");
     }
 
     // SubChunk2Size
