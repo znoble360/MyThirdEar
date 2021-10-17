@@ -104,7 +104,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               Row(
                 children: [],
               ),
-              SizedBox(height: 400),
+              // Temporary button for clearing the cache.
+              IconButton(
+                onPressed: () {
+                  // Clear app cache
+                  if (_appDocDir.existsSync()) {
+                    _appDocDir.deleteSync(recursive: true);
+                  }
+                },
+                icon: const Icon(Icons.delete),
+                color: Colors.yellow,
+              ),
+              SizedBox(height: 350),
               StreamBuilder<PositionData>(
                 stream: _positionDataStream,
                 builder: (context, snapshot) {
