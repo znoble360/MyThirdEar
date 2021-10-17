@@ -1,6 +1,7 @@
 // @dart=2.9
 
 import 'dart:io';
+import 'dart:math';
 import 'package:musictranscriptiontools/wav_parser.dart';
 import 'package:fft/fft.dart';
 
@@ -30,8 +31,19 @@ class Frequencies {
     var fft = new FFT().Transform(waveform.sublist(0, 4096));
 
 
+    num max = 0;
+    List res = [];
     for (int i = 0; i < 4096; i++) {
-      print((1/fft[i].real).abs());
+      num mag = sqrt(fft[i].real*fft[i].real + fft[i].imaginary*fft[i].imaginary);
+      if (mag > max) {
+        max = mag;
+      }
+
+      res.add(mag);
+    }
+
+    for (int i = 0; i < 4096; i++) {
+      print(res[i]/max);
     }
 
     //for (int i = 0; i < 2048; i++) {
