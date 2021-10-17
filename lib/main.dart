@@ -25,7 +25,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late AudioPlayer _player;
   GlobalKey<ScaffoldState> _globalKey = GlobalKey();
-  String _outputPath = "";
+  late Directory _appDocDir;
 
   @override
   void initState() {
@@ -40,12 +40,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   Future<void> _init() async {
     // Open Documents Directory
-    Directory appDocumentDir = await getApplicationDocumentsDirectory();
-    String rawDocumentPath = appDocumentDir.path;
-
-    _outputPath = rawDocumentPath;
-
-    // TODO: To write an mp3, get the path first and then write as bytes as shown here: https://pub.dev/documentation/mp3editor/latest/
+    _appDocDir = await getApplicationDocumentsDirectory();
 
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
@@ -89,7 +84,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         key: _globalKey,
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            selectFileForPlayer(_player, _outputPath);
+            selectFileForPlayer(_player, _appDocDir);
           },
           child: const Icon(Icons.file_upload),
           backgroundColor: Colors.yellowAccent,
@@ -110,6 +105,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               SizedBox(height: 8.0),
               Row(
                 children: [],
+              ),
+              // Temporary button for clearing the cache.
+              IconButton(
+                onPressed: () {
+                  // Clear app cache
+                  if (_appDocDir.existsSync()) {
+                    _appDocDir.deleteSync(recursive: true);
+                  }
+                },
+                icon: const Icon(Icons.delete),
+                color: Colors.yellow,
               ),
               SizedBox(
                 height: 400,
