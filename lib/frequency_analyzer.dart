@@ -33,17 +33,26 @@ class Frequencies {
 
     num max = 0;
     List res = [];
-    for (int i = 0; i < 4096; i++) {
-      num mag = sqrt(fft[i].real*fft[i].real + fft[i].imaginary*fft[i].imaginary);
-      if (mag > max) {
-        max = mag;
-      }
 
-      res.add(mag);
+    for (int i = 0; i < numBins; i++) {
+      res.add([]);
+      for (int j = 0; j < 4096; j++) {
+        num mag = sqrt(fft[j].real*fft[j].real + fft[j].imaginary*fft[j].imaginary);
+        if (mag > max) {
+          max = mag;
+        }
+
+        res[i].add(mag);
+      }
     }
 
-    for (int i = 0; i < 4096; i++) {
-      print(res[i]/max);
+    for (int i = 0; i < numBins; i++) {
+      for (int j = 0; j < 4096; j++) {
+        if (j != 0) {
+          stdout.write(",");
+        }
+        stdout.write(res[i][j]/max);
+      }
     }
 
     //for (int i = 0; i < 2048; i++) {
