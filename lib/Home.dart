@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:musictranscriptiontools/ui/home/screen.dart';
+import 'package:musictranscriptiontools/utils/file_handler.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -62,7 +63,6 @@ class HomeState extends State<Home> {
           children: [
             Container(
                 color: Colors.white,
-                padding: EdgeInsets.only(bottom: 600.h),
                 child: SingleChildScrollView(
                     child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,24 +79,35 @@ class HomeState extends State<Home> {
                                 decoration: TextDecoration.none))),
                     for (String url in musics) getMusicListItem(url),
                     SizedBox(height: 30.h),
-                    Row(
+                    Row (
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Icon(
-                          Icons.add_circle,
-                          color: Colors.black,
-                          size: 80.w,
+                        RawMaterialButton(
+                          fillColor: Color(0xFFBBDEFB),
+                          onPressed: () {
+                            // selectFileForPlayer(_player, _outputPath);
+                            print("clicked upload file");
+                          },
+                          child: Icon(
+                            Icons.file_upload_outlined,
+                            color: Colors.black,
+                            size: 70.w,
+                          ),
+                          shape: CircleBorder(
+                            side: BorderSide(width: 1, color: Colors.black, style: BorderStyle.solid)
+                          ),
+                          padding: EdgeInsets.all(10.0)
                         ),
-                        SizedBox(width: 30.w)
-                      ],
+                        SizedBox(width: 40.w)
+                      ]
                     )
                   ],
                 ))),
-            // Align(
-            //   alignment: Alignment.bottomLeft,
-            //   child: getBottomView(),
-            // )
+            Align(
+              alignment: Alignment.bottomLeft,
+              child: getBottomView(),
+            )
           ],
         )));
   }
@@ -138,7 +149,7 @@ class HomeState extends State<Home> {
         },
         child: Container(
           margin: EdgeInsets.only(left: 30.w, right: 30.w, top: 30.w),
-          padding: EdgeInsets.all(30.w),
+          padding: EdgeInsets.all(20.w),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(15.w)),
             color: Color(0xFFBBDEFB),
@@ -199,7 +210,7 @@ class HomeState extends State<Home> {
                   style: TextStyle(
                     fontSize: 42.sp,
                   ),
-                  onSubmitted: (v) {
+                  onChanged: (v) {
                     search(v);
                   },
                   decoration: InputDecoration(
