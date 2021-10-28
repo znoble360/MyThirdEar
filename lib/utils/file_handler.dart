@@ -1,8 +1,9 @@
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
 import 'package:just_audio/just_audio.dart';
 
 // Try to load audio from a source and catch any errors.
@@ -42,15 +43,15 @@ void selectFileForPlayer(AudioPlayer player, Directory appDocDir) async {
 
     String audioMP3Path = '$dirPath/audio.mp3';
     // TODO: Generate waveform data and save it to waveform.bin
-    // String waveformBinPath = '$dirPath/waveform.bin';
+    String waveformBinPath = '$dirPath/waveform.bin';
 
     // Run FFmpeg on this single file and store it in app data folder
-    final FlutterFFmpeg flutterFFmpeg = new FlutterFFmpeg();
     String convertToMp3Command = '-i ${file.path} $audioMP3Path';
+    await FFmpegKit.executeAsync(convertToMp3Command);
 
-    flutterFFmpeg
-        .execute(convertToMp3Command)
-        .then((rc) => print("FFmpeg process exited with rc $rc"));
+    // Generate waveform binary data.
+    //String generateWaveformBinDataCmd =
+    //    '-i ${file.path} -ac 1 -filter:a aresample=80 -map 0:a -c:a pcm_s16le -f data -';
 
     // Set the audio source given file input path
     await player.setAudioSource(AudioSource.uri(Uri.file(audioMP3Path)),
