@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -7,7 +8,8 @@ import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
 import 'package:just_audio/just_audio.dart';
 
 // Try to load audio from a source and catch any errors.
-void selectFileForPlayer(AudioPlayer player, Directory appDocDir) async {
+void selectFileForPlayer(AudioPlayer player, Directory appDocDir,
+    StreamController<String> waveformFileController) async {
   try {
     // Call to open file manager on android and iOS. Choose only one file for now.
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -47,15 +49,27 @@ void selectFileForPlayer(AudioPlayer player, Directory appDocDir) async {
 
     // Run FFmpeg on this single file and store it in app data folder
     String convertToMp3Command = '-i ${file.path} $audioMP3Path';
-    await FFmpegKit.executeAsync(convertToMp3Command);
+    FFmpegKit.executeAsync(convertToMp3Command, (session) async {
+      await session.getReturnCode();
+
+      // Set the audio source given file input path
+      await player.setAudioSource(AudioSource.uri(Uri.file(audioMP3Path)),
+          initialPosition: Duration.zero, preload: true);
+    });
 
     // Generate waveform binary data.
-    //String generateWaveformBinDataCmd =
-    //    '-i ${file.path} -ac 1 -filter:a aresample=80 -map 0:a -c:a pcm_s16le -f data -';
+    String generateWaveformBinDataCmd =
+        '-i ${file.path} -v quiet -ac 1 -filter:a aresample=200 -map 0:a -c:a pcm_s16le -f data $waveformBinPath';
 
-    // Set the audio source given file input path
-    await player.setAudioSource(AudioSource.uri(Uri.file(audioMP3Path)),
-        initialPosition: Duration.zero, preload: true);
+    FFmpegKit.executeAsync(generateWaveformBinDataCmd, (session) async {
+      final returnCode = await session.getReturnCode();
+
+      if (ReturnCode.isSuccess(returnCode)) {
+        waveformFileController.add(waveformBinPath);
+      } else {
+        print("Error");
+      }
+    });
   } catch (e) {
     print("Error loading audio source: $e");
   }

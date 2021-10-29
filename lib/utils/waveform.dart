@@ -2,6 +2,7 @@
 Source: https://github.com/mattetti/waveform_demo
 */
 
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -10,7 +11,9 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 
 Future<WaveformData> loadWaveformData(String filename) async {
-  final data = await rootBundle.load("$filename");
+  Uri myUri = Uri.parse(filename);
+  File audioFile = new File.fromUri(myUri);
+  final data = ByteData.sublistView(await audioFile.readAsBytes());
   final List<int> array = [];
 
   for (int i = 0; i < data.lengthInBytes; i += 2) {

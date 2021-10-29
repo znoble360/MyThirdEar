@@ -1,5 +1,4 @@
 import 'package:audio_session/audio_session.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -26,6 +25,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   late AudioPlayer _player;
   GlobalKey<ScaffoldState> _globalKey = GlobalKey();
   late Directory _appDocDir;
+  final _waveformFileController = StreamController<String>();
 
   @override
   void initState() {
@@ -84,7 +84,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         key: _globalKey,
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            selectFileForPlayer(_player, _appDocDir);
+            selectFileForPlayer(_player, _appDocDir, _waveformFileController);
           },
           child: const Icon(Icons.file_upload),
           backgroundColor: Colors.yellowAccent,
@@ -118,20 +118,29 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                 color: Colors.yellow,
               ),
               SizedBox(
-                height: 400,
-                child: FutureBuilder<WaveformData>(
-                  future: loadWaveformData("audio/data.dat"),
-                  builder: (context, AsyncSnapshot<WaveformData> snapshot) {
-                    if (snapshot.hasData) {
-                      return PaintedWaveform(sampleData: snapshot.data);
-                    } else if (snapshot.hasError) {
-                      return Text("Error ${snapshot.error}",
-                          style: TextStyle(color: Colors.red));
-                    }
-                    return CircularProgressIndicator();
-                  },
-                ),
-              ),
+                  height: 400,
+                  child: StreamBuilder<String>(
+                    stream: _waveformFileController.stream,
+                    initialData: "audio/data.dat",
+                    builder: (BuildContext __context,
+                        AsyncSnapshot<String> __snapshot) {
+                      return FutureBuilder<WaveformData>(
+                        future: loadWaveformData(__snapshot.data!),
+                        builder:
+                            (context, AsyncSnapshot<WaveformData> snapshot) {
+                          if (snapshot.hasData) {
+                            print(snapshot.data!.length);
+                            print("Got data, drawing waveform");
+                            return PaintedWaveform(sampleData: snapshot.data);
+                          } else if (snapshot.hasError) {
+                            return Text("Error ${snapshot.error}",
+                                style: TextStyle(color: Colors.red));
+                          }
+                          return CircularProgressIndicator();
+                        },
+                      );
+                    },
+                  )),
               StreamBuilder<PositionData>(
                 stream: _positionDataStream,
                 builder: (context, snapshot) {
