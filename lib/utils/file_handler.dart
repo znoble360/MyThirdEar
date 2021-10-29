@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -44,8 +45,10 @@ void selectFileForPlayer(AudioPlayer player, Directory appDocDir,
     final String dirPath = finalDirectory.path;
 
     String audioMP3Path = '$dirPath/audio.mp3';
-    // TODO: Generate waveform data and save it to waveform.bin
+    String audioWAVpath = '$dirPath/songWAV.wav'; // path to song's wav
+    String bookmarksPath = '$dirPath/bookmarks.json'; // path to bookmarks file
     String waveformBinPath = '$dirPath/waveform.bin';
+    String infoJSONPath = '$dirPath/info.json';
 
     // Run FFmpeg on this single file and store it in app data folder
     String convertToMp3Command = '-i ${file.path} $audioMP3Path';
@@ -70,6 +73,33 @@ void selectFileForPlayer(AudioPlayer player, Directory appDocDir,
         print("Error");
       }
     });
+
+    // Convert to WAV
+    String convertToWavCommand = '-i ${file.path} $audioWAVpath';
+    FFmpegKit.executeAsync(convertToWavCommand, (session) async {
+      await session.getReturnCode();
+    });
+
+    /* Here is where we would do the processing */
+    /* how to write and write/to JSON file: https://www.youtube.com/watch?v=oZNvRd96iIs&ab_channel=TheFlutterFactory */
+    // Store the song name in an info.json file with the path above.
+    String ext = file.name.substring(file.name.lastIndexOf('.'));
+    String songName = file.name.replaceAll(ext, "");
+    Song song = Song(songName); // create new song to be serialized
+    String songJSON = jsonEncode(song);
+    print('making the JSON, should show file name: ');
+    print(songJSON);
+    File songInfo = File('$infoJSONPath');
+    await songInfo.writeAsString(songJSON);
+    if (await songInfo.exists()) {
+      print("say that the songInfo file exists");
+      String fileContent = await songInfo.readAsString();
+      print("file content: " + fileContent);
+    } else {
+      print("error");
+    }
+
+    print("mp3 command: " + convertToMp3Command);
   } catch (e) {
     print("Error loading audio source: $e");
   }
@@ -81,4 +111,14 @@ String _generateMD5Hash(PlatformFile file) {
   }
 
   return md5.convert(file.bytes!).toString();
+}
+
+class Song {
+  String name;
+
+  Song(this.name);
+
+  Map toJson() => {
+        'name': name,
+      };
 }
