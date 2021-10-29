@@ -214,8 +214,8 @@ class HomeState extends State<Home> {
                     search(v);
                   },
                   decoration: InputDecoration(
-                    border: InputBorder.none, // 去掉下滑线
-                    counterText: '', // 去除输入框底部的字符计数
+                    border: InputBorder.none, 
+                    counterText: '', 
                   )))
         ],
       ),
