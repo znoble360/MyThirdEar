@@ -3,7 +3,7 @@ import 'package:tonic/tonic.dart';
 
 import 'package:musictranscriptiontools/plugins/midi/midi.dart';
 import 'package:musictranscriptiontools/plugins/vibrate/vibrate.dart';
-import 'package:musictranscriptiontools/ui/theme.dart';
+import 'package:musictranscriptiontools/ui/home/theme.dart';
 
 class PianoKey extends StatelessWidget {
   const PianoKey({

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musictranscriptiontools/ui/theme.dart';
+import 'package:musictranscriptiontools/ui/home/theme.dart';
 
 class PianoSlider extends StatelessWidget {
   const PianoSlider({

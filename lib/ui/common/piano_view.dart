@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:musictranscriptiontools/ui/theme.dart';
+import 'package:musictranscriptiontools/ui/home/theme.dart';
 
 import 'package:musictranscriptiontools/ui/common/piano_octave.dart';
 import 'package:musictranscriptiontools/ui/common/piano_section.dart';

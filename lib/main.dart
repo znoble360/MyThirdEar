@@ -1,62 +1,55 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:musictranscriptiontools/Home.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
-import 'package:musictranscriptiontools/data/blocs/blocs.dart';
-import 'package:musictranscriptiontools/ui/theme.dart';
+import 'package:musictranscriptiontools/screens/library.dart';
+import 'package:musictranscriptiontools/models/library.dart';
+import 'package:musictranscriptiontools/ui/home/theme.dart';
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatefulWidget {
-  const MyApp({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  _MyAppState createState() => _MyAppState();
+void main() {
+  runApp(const MyApp());
 }
 
-class _MyAppState extends State<MyApp> {
-  final _settingsBloc = SettingsBloc();
-
-  @override
-  void initState() {
-    _settingsBloc.add(CheckSettings());
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _settingsBloc.close();
-    super.dispose();
-  }
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final theme = ThemeUtils(context);
-    return ScreenUtilInit(
-        designSize: Size(750, 1624),
-        builder: () => MultiBlocProvider(
-              providers: [
-                BlocProvider<SettingsBloc>(create: (_) => _settingsBloc),
-              ],
-                child: BlocBuilder<SettingsBloc, SettingsState>(
-                  builder: (context, settingState) {
-                    ThemeMode mode = ThemeMode.system;
-                    if (settingState is SettingsReady) {
-                      mode = settingState.themeMode;
-                    }
-                    return MaterialApp(
-                      debugShowCheckedModeBanner: false,
-                      theme: theme.light,
-                      themeMode: mode,
-                      home: Home(),
-                      onGenerateTitle: (context) => "My Third Ear",
-                      locale: Locale("en", "US"),
-                    );
-                  },
-                ),
-            ));
+    List<AudioFile> audioFiles = [
+      AudioFile("In The Mood", "Glenn Miller", Duration(minutes: 2, seconds: 30),
+        "home/songs/inthemood.mp3"),
+    AudioFile("Hello", "Adele", Duration(minutes: 2, seconds: 30),
+        "home/songs/inthemood.mp3"),
+    ];
+    // get cached files here
+    // audioFiles = getCachedFiles()
+
+    // Using MultiProvider is convenient when providing multiple objects.
+    return MultiProvider(
+      providers: [
+        // In this sample app, CatalogModel never changes, so a simple Provider
+        // is sufficient.
+        Provider(create: (context) => LibraryModel(audioFiles)),
+        // CartModel is implemented as a ChangeNotifier, which calls for the use
+        // of ChangeNotifierProvider. Moreover, CartModel depends
+        // on CatalogModel, so a ProxyProvider is needed.
+        // ChangeNotifierProxyProvider<LibraryModel, MusicPlayerModel>(
+        //   create: (context) => CartModel(),
+        //   update: (context, catalog, cart) {
+        //     if (cart == null) throw ArgumentError.notNull('cart');
+        //     cart.catalog = catalog;
+        //     return cart;
+        //   },
+        // ),
+      ],
+      child: MaterialApp(
+        title: 'MyThirdEar',
+        theme: ThemeUtils(context).themeData,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const Library(),
+          // '/player': (context) => const MusicPlayer(url: '',)
+        },
+      ),
+    );
   }
 }
