@@ -42,8 +42,6 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
 
-    print(_audioFile.filepath);
-
     try {
       await _player.setAudioSource(
           AudioSource.uri(Uri.file(_audioFile.filepath)),

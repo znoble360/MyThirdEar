@@ -14,12 +14,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<AudioFile> audioFiles = [
-      AudioFile("In The Mood", "Glenn Miller", Duration(minutes: 2, seconds: 30),
-        "home/songs/inthemood.mp3"),
-    AudioFile("Hello", "Adele", Duration(minutes: 2, seconds: 30),
-        "home/songs/inthemood.mp3"),
-    ];
+    List<AudioFile> audioFiles = [];
     // get cached files here
     // audioFiles = getCachedFiles()
 
