@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:musictranscriptiontools/models/library.dart';
+import 'package:musictranscriptiontools/screens/music_player_screen.dart';
 import 'package:musictranscriptiontools/screens/player.dart';
 import 'package:musictranscriptiontools/utils/file_handler.dart';
 import 'package:path_provider/path_provider.dart';
@@ -112,16 +113,16 @@ class _MyListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var item = context.select<LibraryModel, AudioFile>(
-        // Here, we are only interested in the item at [index]. We don't care
-        // about any other change.
         (library) => library.getAllAudioFiles()[index]);
 
     return GestureDetector(
         onTap: () {
+          MusicPlayer player = new MusicPlayer(audioFile: item);
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => MusicPlayer(audioFile: item),
+              builder: (context) =>
+                  MusicPlayerScreen(player: player),
             ),
           );
         },

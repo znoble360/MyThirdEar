@@ -6,11 +6,9 @@ import 'package:just_audio/just_audio.dart';
 import 'package:musictranscriptiontools/cards/pitch.dart';
 import 'package:musictranscriptiontools/cards/speed.dart';
 import 'package:musictranscriptiontools/models/library.dart';
-import 'package:musictranscriptiontools/utils/file_handler.dart';
+
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import 'package:musictranscriptiontools/utils/common.dart';
 
 class MusicPlayer extends StatefulWidget {
@@ -33,7 +31,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black,
     ));
-    _player = AudioPlayer();
+    _player = new AudioPlayer();
     _audioFile = widget.audioFile;
     _init();
   }
@@ -109,7 +107,9 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
               ),
               ControlButtons(_player),
             ],
-          ))),
+          )
+          )
+          ),
         ),
       ),
     );
@@ -288,16 +288,4 @@ class ControlButtons extends StatelessWidget {
       ],
     );
   }
-}
-
-class AudioMetadata {
-  final String album;
-  final String title;
-  final String artwork;
-
-  AudioMetadata({
-    required this.album,
-    required this.title,
-    required this.artwork,
-  });
 }

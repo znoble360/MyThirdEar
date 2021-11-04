@@ -18,31 +18,16 @@ class MyApp extends StatelessWidget {
     // get cached files here
     // audioFiles = getCachedFiles()
 
-    // Using MultiProvider is convenient when providing multiple objects.
     return MultiProvider(
       providers: [
-        // In this sample app, CatalogModel never changes, so a simple Provider
-        // is sufficient.
-        Provider(create: (context) => LibraryModel(audioFiles)),
-        // CartModel is implemented as a ChangeNotifier, which calls for the use
-        // of ChangeNotifierProvider. Moreover, CartModel depends
-        // on CatalogModel, so a ProxyProvider is needed.
-        // ChangeNotifierProxyProvider<LibraryModel, MusicPlayerModel>(
-        //   create: (context) => CartModel(),
-        //   update: (context, catalog, cart) {
-        //     if (cart == null) throw ArgumentError.notNull('cart');
-        //     cart.catalog = catalog;
-        //     return cart;
-        //   },
-        // ),
+        Provider(create: (context) => LibraryModel(audioFiles))
       ],
       child: MaterialApp(
         title: 'MyThirdEar',
         theme: ThemeUtils(context).themeData,
         initialRoute: '/',
         routes: {
-          '/': (context) => const Library(),
-          // '/player': (context) => const MusicPlayer(url: '',)
+          '/': (context) => const Library()
         },
       ),
     );
