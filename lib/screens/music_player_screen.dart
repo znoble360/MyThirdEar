@@ -101,7 +101,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Show Spectrogram'),
+                Text('Hide Spectrogram'),
                 Checkbox(
                     value: hideRTA,
                     onChanged: (value) {
@@ -131,7 +131,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
             ],
           ),
           SizedBox(height: 5),
-          Flexible(
+          hideRTA ? Flexible(
             child: PianoView(
               keyWidth: (80 * (0.5)),
               showLabels: true,
@@ -139,7 +139,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               disableScroll: false,
               feedback: false,
             ),
-          )
+          ) : SizedBox(height: 0)
         ],
       ),
     );
