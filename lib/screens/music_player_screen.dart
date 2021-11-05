@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:musictranscriptiontools/cards/waveform.dart';
 
 import 'package:musictranscriptiontools/plugins/app_review/app_review.dart';
 import 'package:musictranscriptiontools/screens/library.dart';
 import 'package:musictranscriptiontools/screens/player.dart';
 import 'package:musictranscriptiontools/ui/common/index.dart';
 import 'package:musictranscriptiontools/ui/common/piano_view.dart';
+import 'package:musictranscriptiontools/utils/waveform.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   final MusicPlayer player;
@@ -68,9 +70,30 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          SizedBox(height: 80),
+          SizedBox(
+              height: 160,
+              child: StreamBuilder<String>(
+                stream: _player.audioFile.waveformFileController.stream,
+                initialData: "audio/data.dat",
+                builder:
+                    (BuildContext __context, AsyncSnapshot<String> __snapshot) {
+                  return FutureBuilder<WaveformData>(
+                    future: loadWaveformData(__snapshot.data!),
+                    builder: (context, AsyncSnapshot<WaveformData> snapshot) {
+                      if (snapshot.hasData) {
+                        print(snapshot.data!.length);
+                        print("Got data, drawing waveform");
+                        return PaintedWaveform(sampleData: snapshot.data);
+                      }
+                      return CircularProgressIndicator(
+                        color: Colors.blueAccent
+                      );
+                    },
+                  );
+                },
+              )),
           Container(
-            height: 250,
+            height: 240,
             child: _player,
           ),
           Align(
@@ -107,7 +130,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               ),
             ],
           ),
-          SizedBox(height: 30),
+          SizedBox(height: 5),
           Flexible(
             child: PianoView(
               keyWidth: (80 * (0.5)),

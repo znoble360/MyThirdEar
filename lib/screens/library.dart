@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/src/provider.dart';
 
 class Library extends StatefulWidget {
+
   const Library({Key? key}) : super(key: key);
 
   @override
@@ -18,7 +19,7 @@ class Library extends StatefulWidget {
 }
 
 class _LibraryState extends State<Library> {
-  String _outputPath = "";
+  var _appDocDir;
 
   @override
   void initState() {
@@ -27,14 +28,12 @@ class _LibraryState extends State<Library> {
   }
 
   Future<void> _init() async {
-    Directory appDocumentDir = await getApplicationDocumentsDirectory();
-    String rawDocumentPath = appDocumentDir.path;
-    _outputPath = rawDocumentPath;
+    _appDocDir = await getApplicationDocumentsDirectory();
   }
 
   void uploadAudioFile() async {
-    print(_outputPath);
-    AudioFile? file = await selectFileForPlayer(_LibraryState()._outputPath);
+    AudioFile? file =
+        await selectFileForPlayer(_appDocDir);
     if (file != null) {
       var library = context.read<LibraryModel>();
       library.addAudioFile(file);
@@ -121,8 +120,7 @@ class _MyListItem extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  MusicPlayerScreen(player: player),
+              builder: (context) => MusicPlayerScreen(player: player),
             ),
           );
         },
