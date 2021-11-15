@@ -2,6 +2,11 @@
 
 import 'dart:io';
 import 'dart:typed_data';
+//import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
+//import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
+
+//final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
+
 
 //void main() {
 //  String fileName = '/home/znoble360/tones/soundfile.sapp.org_doc_WaveFormat.wav';
@@ -13,6 +18,25 @@ import 'dart:typed_data';
 //  print(song.waveform[0].toString());
 //
 //}
+
+//void main() {
+//  String inputFileName = '/home/znoble360/tones/soundfile.sapp.org_doc_WaveFormat.wav';
+//  String outputFileName = 'lib/wav44_1khz.bin';
+//
+//  Wav.wavToBin(inputFileName, outputFileName);
+//
+//  File fp = File(outputFileName);
+//
+//  List<int> result = Wav.binToList(fp);
+//
+//  print(result.toString());
+//
+//
+//
+//  
+//}
+
+
 
 // TODO: add section to skip subchunks that aren't RIFF, fmt, or data subchunks
 
@@ -133,6 +157,21 @@ class Wav {
         }
       }
     }
+  }
+
+  //static void wavToBin(String inputFileName, String outputFileName) {
+
+  //  String toBinCommand = "ffmpeg -y -i " + inputFileName + " -ar 44100 -ac 1 -map 0:a -c:a pcm_s16le -f data " + outputFileName;
+
+  //  await FFmpegKit.executeAsync(toBinCommand);
+
+  //}
+
+  static List<int> binToList(File fp) {
+
+    Uint8List bin = fp.readAsBytesSync();
+    Int16List temp = Int16List.view(bin.buffer);
+    return temp.toList();
   }
 
   void printHeader() {
