@@ -14,8 +14,7 @@ class PaintedWaveform extends StatefulWidget {
 }
 
 class _PaintedWaveformState extends State<PaintedWaveform> {
-  double startPosition = 1.0;
-  double zoomLevel = 90.0;
+  double startPosition = 0.0;
 
   @override
   Widget build(context) {
@@ -47,7 +46,6 @@ class _PaintedWaveformState extends State<PaintedWaveform> {
                         ),
                         foregroundPainter: WaveformPainter(
                           widget.sampleData!,
-                          zoomLevel: zoomLevel,
                           startingFrame: widget.sampleData!
                               .frameIdxFromPercent(startPosition),
                           color: Color(0xff3994DB),
@@ -62,20 +60,8 @@ class _PaintedWaveformState extends State<PaintedWaveform> {
           Flexible(
             child: Slider(
               activeColor: Colors.indigoAccent,
-              min: 1.0,
-              max: 95.0,
-              divisions: 42,
-              onChanged: (newzoomLevel) {
-                setState(() => zoomLevel = newzoomLevel);
-              },
-              value: zoomLevel,
-            ),
-          ),
-          Flexible(
-            child: Slider(
-              activeColor: Colors.indigoAccent,
-              min: 1.0,
-              max: 95.0,
+              min: 0.0,
+              max: 100.0,
               divisions: 42,
               onChanged: (newstartPosition) {
                 setState(() => startPosition = newstartPosition);

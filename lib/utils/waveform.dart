@@ -58,15 +58,9 @@ class WaveformData {
       percent = 100.0;
     }
 
-    if (percent > 0.0 && percent < 1.0) {
-      return ((data.length.toDouble() / 2) * percent).floor();
-    }
+    int maxFrame = data.length - 5000;
+    int idx = (maxFrame * (percent / 100)).floor();
 
-    int idx = ((data.length.toDouble() / 2) * (percent / 100)).floor();
-    final maxIdx = (data.length.toDouble() / 2 * 0.98).floor();
-    if (idx > maxIdx) {
-      idx = maxIdx;
-    }
     return idx;
   }
 
@@ -75,27 +69,19 @@ class WaveformData {
       _scaleData();
     }
 
-    if (zoomLevel == null || zoomLevel < 1.0) {
-      zoomLevel = 1.0;
-    } else if (zoomLevel > 100.0) {
-      zoomLevel = 100.0;
+    int endFrame = fromFrame + 5000;
+
+    print("Start frame = " + fromFrame.toString());
+    print("End frame = " + endFrame.toString());
+    print("Scaled data length = " + _scaledData.length.toString());
+
+    if (endFrame >= _scaledData.length) {
+      // Can't go past end of data.
+      fromFrame = 0;
+      endFrame = (_scaledData.length > 5000) ? 5000 : _scaledData.length;
     }
 
-    if (zoomLevel == 1.0 && fromFrame == 0) {
-      return _path(_scaledData, size);
-    }
-
-    // buffer so we can't start too far in the waveform, 90% max
-    if (fromFrame * 2 > (data.length * 0.98).floor()) {
-      debugPrint("from frame is too far at $fromFrame");
-      fromFrame = ((data.length / 2) * 0.98).floor();
-    }
-
-    int endFrame = (fromFrame * 2 +
-            ((_scaledData.length - fromFrame * 2) * (1.0 - (zoomLevel / 100))))
-        .floor();
-
-    return _path(_scaledData.sublist(fromFrame * 2, endFrame), size);
+    return _path(_scaledData.sublist(fromFrame, endFrame), size);
   }
 
   Path _path(List<double> samples, Size size) {
