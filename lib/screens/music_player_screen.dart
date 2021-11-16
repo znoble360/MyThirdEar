@@ -34,8 +34,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     _player = widget.player;
   }
 
-  onChanged() {}
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

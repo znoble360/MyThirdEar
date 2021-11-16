@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:musictranscriptiontools/cards/pitch.dart';
 import 'package:musictranscriptiontools/cards/speed.dart';
 import 'package:musictranscriptiontools/models/library.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
@@ -23,6 +26,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     with WidgetsBindingObserver {
   var _player;
   var _audioFile;
+  var _appDocDir;
 
   @override
   void initState() {
@@ -33,18 +37,22 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     ));
     _player = new AudioPlayer();
     _audioFile = widget.audioFile;
+
     _init();
   }
 
   Future<void> _init() async {
+    _appDocDir = await getApplicationDocumentsDirectory();
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
 
     try {
-      await _player.setAudioSource(
-          AudioSource.uri(Uri.file(_audioFile.filepath)),
-          initialPosition: Duration.zero,
-          preload: true);
+      String applicationDirectory = _audioFile.filepath;
+      String audioFilePath = '${_appDocDir.path}/$applicationDirectory';
+      print((audioFilePath));
+
+      await _player.setAudioSource(AudioSource.uri(Uri.file(audioFilePath)),
+          initialPosition: Duration.zero, preload: true);
     } catch (e) {
       print("Error loading audio source: $e");
     }
@@ -107,9 +115,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
               ),
               ControlButtons(_player),
             ],
-          )
-          )
-          ),
+          ))),
         ),
       ),
     );
