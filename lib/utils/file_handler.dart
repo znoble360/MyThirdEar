@@ -14,8 +14,7 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
   AudioFile? audioFile;
   try {
     PlatformFile file; // the input file path on-device
-    final waveformFileController =
-        BehaviorSubject<String>();
+    final waveformFileController = BehaviorSubject<String>();
 
     // Call to open file manager on android and iOS. Choose only one file for now.
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -38,10 +37,7 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
 
       print("We've already seen this file, look at cached files");
 
-      audioFile = new AudioFile(file.name, "author",
-          Duration(seconds: file.size), audioMP3Path, waveformFileController);
-
-      return audioFile;
+      return null;
     }
 
     // Create directory since it doesn't exist yet.
@@ -101,8 +97,11 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
 
     print("mp3 command: " + convertToMp3Command);
 
-    audioFile = new AudioFile(file.name, "author", Duration(seconds: file.size),
-        audioMP3Path, waveformFileController);
+    String relativeAudioMP3Path = '$md5Hash/audio.mp3';
+    String relativeWaveformBinPath = '$md5Hash/waveform.bin';
+
+    audioFile = new AudioFile(file.name, "author", relativeAudioMP3Path,
+        waveformFileController, relativeWaveformBinPath);
   } catch (e) {
     print("Error loading audio source: $e");
   }

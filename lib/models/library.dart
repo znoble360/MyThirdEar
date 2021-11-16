@@ -1,7 +1,6 @@
-import 'dart:async';
-
 import 'package:rxdart/rxdart.dart';
 
+// Model representing the list of audio files displayed to a user in the home page
 class LibraryModel {
   List<AudioFile> audioFiles = [];
 
@@ -15,12 +14,13 @@ class LibraryModel {
   LibraryModel(this.audioFiles);
 }
 
+// Audio file model used to store metadata of the files in the user's library
 class AudioFile {
   final String name;
   final String author;
-  final Duration duration;
   final String filepath;
+  final String waveformBinPath;
   final BehaviorSubject<String> waveformFileController;
 
-  AudioFile(this.name, this.author, this.duration, this.filepath, this.waveformFileController);
+  AudioFile(this.name, this.author, this.filepath, this.waveformFileController, this.waveformBinPath);
 }

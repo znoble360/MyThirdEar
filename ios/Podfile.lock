@@ -51,7 +51,7 @@ PODS:
     - Flutter
   - package_info (0.0.1):
     - Flutter
-  - path_provider (0.0.1):
+  - path_provider_ios (0.0.1):
     - Flutter
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
@@ -71,7 +71,7 @@ DEPENDENCIES:
   - flutter_midi (from `.symlinks/plugins/flutter_midi/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/ios`)
   - package_info (from `.symlinks/plugins/package_info/ios`)
-  - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
   - url_launcher (from `.symlinks/plugins/url_launcher/ios`)
   - vibrate (from `.symlinks/plugins/vibrate/ios`)
 
@@ -100,8 +100,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/just_audio/ios"
   package_info:
     :path: ".symlinks/plugins/package_info/ios"
-  path_provider:
-    :path: ".symlinks/plugins/path_provider/ios"
+  path_provider_ios:
+    :path: ".symlinks/plugins/path_provider_ios/ios"
   url_launcher:
     :path: ".symlinks/plugins/url_launcher/ios"
   vibrate:
@@ -119,7 +119,7 @@ SPEC CHECKSUMS:
   flutter_midi: 4fe7280cf156c668fe92445f384b1bc440473cdb
   just_audio: baa7252489dbcf47a4c7cc9ca663e9661c99aafa
   package_info: 873975fc26034f0b863a300ad47e7f1ac6c7ec62
-  path_provider: d1e9807085df1f9cc9318206cd649dc0b76be3de
+  path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SwiftyGif: 5d4af95df24caf1c570dbbcb32a3b8a0763bc6d7
   url_launcher: b6e016d912f04be9f5bf6e8e82dc599b7ba59649
