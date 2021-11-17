@@ -7,24 +7,33 @@ import 'package:image/image.dart';
 import 'package:musictranscriptiontools/wav_parser.dart';
 import 'package:fft/fft.dart';
 
-void main (List<String> args) {
-  File fp = File(args[0]);
-
-  Frequencies freq = Frequencies(fp);
-  freq.generatePred(args[1]);
-  freq.generateSpec(args[2]);
-  //freq.printNotes();
-
-}
+// Sample useage:
+//void main (List<String> args) {
+//
+//  // args are: 
+//  // 1) input bin
+//  // 2) csv output name
+//  // 3) png output name
+//  File fp = File(args[0]);
+//
+//  Frequencies freq = Frequencies(fp);
+//  freq.generatePred(args[1]);
+//  freq.generateSpec(args[2]);
+//  //freq.printNotes();
+//
+//}
 
 class Frequencies {
-  List notes = [];
+  List<List> notes = [];
+  List<List> spec_data = [];
   List<int> waveform;
   Image spec;
   List<List> res = [];
 
-  final NUM_BINS = 2048;
-  final SAMPLE_RATE = 44100;
+  final int NUM_BINS = pow(2, 13);
+  final int SAMPLE_RATE = 44100;
+  final int NOTES_ON_KEYBOARD = 88;
+  final int TONAL_RESOLUTION_OF_SPEC = 11;
 
 
   Frequencies(File fp) {
@@ -37,28 +46,9 @@ class Frequencies {
     //var windowed = Window(new HammingWindowType).apply(waveform);
     //var fft = new FFT().Transform(windowed);
 
-
-
-    // We want to sample enough to see eight notes at 300 bpm, or 10hz
-    // so we will transform at least 2x that rate, which would be 20hz.
-    // 20hz at an original sample rate of 44100hz is 2205 samples per transform
-    // we need each frame at a power of 2, so in reality it would be 2048.
-
-    // we also might try 100 hz for smoothness, but will have to see about how
-    // well that runs. This would be 441 samples per transform, and closest 
-    // power of 2 would be 512.
-
-    // 2048 minimum transform size, maybe 512 transform for smoothness.
-    // higher number means less transforms, less detail.
-
-    final int transformSize = 2048;
-    //final int transformSize = 512;
+    final int transformSize = NUM_BINS;
 
     int numFrames = (waveform.length/transformSize).toInt();
-
-    spec = Image(NUM_BINS, numFrames);
-    //spectrograph = Image(1440, numFrames);
-
 
     // make fft for every chunk of time
     for (int i = 0; i < numFrames; i++) {
@@ -72,7 +62,11 @@ class Frequencies {
       var fft = new FFT().Transform(waveform.sublist(start, end));
 
       if (fft.length != NUM_BINS) {
-        print("uh oh, we have " + fft.length.toString() + " bins, not " + NUM_BINS.toString() + " bins");
+        print("uh oh, we have " + 
+            fft.length.toString() + 
+            " bins, not " + 
+            NUM_BINS.toString() + 
+            " bins");
       }
 
       // for each bin in the transform, compute the magnitude (aka modulus) 
@@ -87,11 +81,6 @@ class Frequencies {
         }
         res[i].add(mag);
       }
-      //print("currentIndex:\t" + i.toString() + " of " + numFrames.toString());
-      //print("maxIndex:\t" + maxIndex.toString());
-      //print("estimated hz:\t" + _binToFreq(maxIndex).toString());
-      //print("estimated note:\t" + noteToLetterName(_binToNote(maxIndex).round()));
-      //print("");
 
       // normalize between 0 and 1 using max
       if (max == 0) {
@@ -104,8 +93,6 @@ class Frequencies {
 
     }
 
-    //TODO: add things to the image and predictions stuff, 
-
     // populate predictions for notes
     for (int i = 0; i < res.length; i++) {
       notes.add([]);
@@ -117,7 +104,13 @@ class Frequencies {
       // here we average the intensity of bins corresponding to
       // curNote-0.5 and curNote+0.5, then add these averages to
       // the corresponding notes index for our note intensity prediction
-      for (int j = 0; j < res[0].length; j++) {
+      // starting at a quartertone below the lowest note on a keyboard
+      // up to the highest note on the keyboard
+      if (_noteToBin(88).round() > res[0].length) {
+        print("error: not enough fft bins for whole keyboard");
+      }
+      int top = _noteToBin(NOTES_ON_KEYBOARD.toDouble()).round();
+      for (int j = _noteToBin(-0.5).toInt(); j < top; j++) {
 
         // to catch when we have reached the boundary between
         // curNote and the next note
@@ -137,40 +130,65 @@ class Frequencies {
       }
     }
 
-    // populate the spectrograph image
-    //print("numFrames:" + numFrames.toString());
-    //print("NUM_BINS:" + NUM_BINS.toString());
-    for (int i = 0; i < numFrames; i++) {
-      for (int j = 0; j < NUM_BINS; j++) {
 
-        //int color = _intensityToColor(res[i][j]);
+    // generate data for spectrograph, scaling logarithmically
+    // loop through each frame of res
+    for (int i = 0; i < res.length; i++) {
+      spec_data.add([]);
 
-        int colorR = 255;
-        int colorG = 255;
-        int colorB = 255;
-        int r = (res[i][j] * colorR).toInt();
-        int g = (res[i][j] * colorG).toInt();
-        int b = (res[i][j] * colorB).toInt();
+      // loop through each note on the keyboard
+      for (int j = 0; j < NOTES_ON_KEYBOARD; j++) {
+        int noteStart = _noteToBin(j.toDouble()-0.5).toInt();
+        int noteEnd = _noteToBin(j.toDouble()+0.5).toInt();
 
-        //print(i.toString() + ", " + j.toString() + ", " + r.toString() + ", " + g.toString() + ", " + b.toString());
-        spec.setPixelRgba(j, i, r, g, b);
+        // cut each note on the keyboard into TONAL_RESOLUTION_OF_SPEC slices
+        // then loop through each slice
+        for (int k = 0; k < TONAL_RESOLUTION_OF_SPEC; k++) {
+
+          double curNoteChunkStart =
+              j + (k.toDouble()/TONAL_RESOLUTION_OF_SPEC.toDouble());
+          double curNoteChunkEnd =
+              j + ((k+1).toDouble()/TONAL_RESOLUTION_OF_SPEC.toDouble()); 
+          int bin = _noteToBin(curNoteChunkStart).toInt();
+
+          double curSum = 0;
+          int curNumBins = 0;
+
+          // for each slice, average the bins that pertain to that slice of the frame
+          while (bin < _noteToBin(curNoteChunkEnd)) {
+            curSum += res[i][bin];
+            curNumBins++;
+            bin++;
+          }
+
+          double avg = curSum/curNumBins.toDouble();
+
+          spec_data[i].add(avg);
+
+        }
       }
     }
+
+    spec = _2dListToImage(spec_data);
   }
 
+  // this will write an image of the spectrograph to given the output file name
   void generateSpec(String outFileName) {
     File fp = new File(outFileName);
     fp.writeAsBytes(encodePng(spec));
   }
 
+  // this will write a csv of the predictions to given the output file name
   void generatePred(String outFileName) {
-    String csv = const ListToCsvConverter().convert(res);
+    String csv = const ListToCsvConverter().convert(notes);
 
     var out = new File(outFileName).openWrite();
     out.write(csv);
     out.close();
   }
 
+  // given the number of a key on an 88 key keyboard,
+  // returns the note letter name associated with that keyboard key
   String noteToLetterName(int note) {
     int letter = note % 12;
     switch(letter) {
@@ -225,9 +243,31 @@ class Frequencies {
     }
   }
 
+  // populates an image given a 2d array of intensity values
+  Image _2dListToImage(List list) {
+
+    Image img = Image(list[0].length, list.length);
+
+    for (int i = 0; i < img.height; i++) {
+      for (int j = 0; j < img.width; j++) {
+
+        int colorR = 255;
+        int colorG = 255;
+        int colorB = 255;
+        int r = (list[i][j] * colorR).toInt();
+        int g = (list[i][j] * colorG).toInt();
+        int b = (list[i][j] * colorB).toInt();
+
+        img.setPixelRgba(j, i, r, g, b);
+      }
+    }
+
+    return img;
+  }
+
   // given a note, returns the corresponding frequency associated with it
   double _noteToFreq(double note) {
-    return pow(2, (note/12) * 27.5);
+    return pow(2, (note/12)) * 27.5;
   }
 
   // given frequency, returns the note value
@@ -261,11 +301,4 @@ class Frequencies {
     double freq = _binToFreq(binIndex);
     return _freqToNote(freq);
   }
-
-  // given color intensity, returns grey scale rgb color
-  // can be changed to something other than grey
-  //Color _intensityToColor(double intensity) {
-  //  int val = 255 * intensity;
-  //  return Color.fromRgba(val, val, val, 255);
-  //}
 }
