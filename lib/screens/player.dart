@@ -24,12 +24,13 @@ class MusicPlayer extends StatefulWidget {
 
 class _MusicPlayerPlayState extends State<MusicPlayer>
     with WidgetsBindingObserver {
-  var _player;
+  late AudioPlayer _player;
   var _audioFile;
   var _appDocDir;
   var loopingMode;
   var loopingStart;
   var loopingEnd;
+  var loopingError;
 
   @override
   void initState() {
@@ -41,6 +42,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     _player = new AudioPlayer();
     _audioFile = widget.audioFile;
     loopingMode = "off";
+    loopingError = false;
 
     _init();
   }
@@ -98,6 +100,11 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
   }
 
   void setEndLoop() {
+    // TODO: add alert
+    if (_player.position <= loopingStart) {
+      loopingError = true;
+      return;
+    }
     setState(() {
       loopingMode = "looping";
       loopingEnd = _player.position;
@@ -112,10 +119,10 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     String applicationDirectory = _audioFile.filepath;
     String audioFilePath = '${_appDocDir.path}/$applicationDirectory';
 
-    await _player.setAudioSource(AudioSource.uri(Uri.file(audioFilePath)),
-        initialPosition: Duration.zero);
-
     setState(() {
+      _player.pause();
+      _player = new AudioPlayer();
+      _player.setFilePath(audioFilePath);
       loopingMode = "off";
     });
   }
@@ -147,15 +154,16 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                   );
                 },
               ),
-              if (loopingMode == "off")
-                Container(
-                    child: Align(
-                  alignment: Alignment.center,
-                  child: TextButton.icon(
-                      onPressed: () => setStartLoop(),
-                      icon: Icon(Icons.loop_outlined),
-                      label: Text("Start Loop")),
-                )),
+              // if (loopingError) TODO: add alert
+                if (loopingMode == "off")
+                  Container(
+                      child: Align(
+                    alignment: Alignment.center,
+                    child: TextButton.icon(
+                        onPressed: () => setStartLoop(),
+                        icon: Icon(Icons.loop_outlined),
+                        label: Text("Start Loop")),
+                  )),
               if (loopingMode == "start")
                 Container(
                     child: Align(
