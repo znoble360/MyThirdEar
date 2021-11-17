@@ -74,4 +74,5 @@ class _PianoViewState extends State<PianoView> {
   }
 
   double get currentOffset => widget.keyWidth * (7 * _currentOctave);
+  
 }
