@@ -159,13 +159,13 @@ class Wav {
     }
   }
 
-  //static void wavToBin(String inputFileName, String outputFileName) {
+  static void wavToBin(String inputFileName, String outputFileName) {
 
-  //  String toBinCommand = "ffmpeg -y -i " + inputFileName + " -ar 44100 -ac 1 -map 0:a -c:a pcm_s16le -f data " + outputFileName;
+    String toBinCommand = "ffmpeg -y -i " + inputFileName + " -ar 44100 -ac 1 -map 0:a -c:a pcm_s16le -f data " + outputFileName;
 
-  //  await FFmpegKit.executeAsync(toBinCommand);
+    await FFmpegKit.executeAsync(toBinCommand);
 
-  //}
+  }
 
   static List<int> binToList(File fp) {
 
