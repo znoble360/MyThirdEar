@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:musictranscriptiontools/utils/common.dart';
 import 'package:musictranscriptiontools/utils/waveform.dart';
 
 class PaintedWaveform extends StatefulWidget {
   PaintedWaveform({
     Key? key,
     @required this.sampleData,
+    @required this.positionDataStream,
   }) : super(key: key);
 
   final WaveformData? sampleData;
+  final Stream<PositionData>? positionDataStream;
 
   @override
   _PaintedWaveformState createState() => _PaintedWaveformState();
@@ -36,39 +39,37 @@ class _PaintedWaveformState extends State<PaintedWaveform> {
                   height = constraints.maxHeight;
                 }
 
-                return Container(
-                  child: Row(
-                    children: <Widget>[
-                      CustomPaint(
-                        size: Size(
-                          constraints.maxWidth,
-                          height,
+                return StreamBuilder<PositionData>(
+                    stream: widget.positionDataStream,
+                    builder: (BuildContext context2,
+                        AsyncSnapshot<PositionData> snapshot2) {
+                      startPosition = snapshot2.data == null
+                          ? 0.0
+                          : snapshot2.data!.position.inMilliseconds.toDouble() /
+                              snapshot2.data!.duration.inMilliseconds
+                                  .toDouble();
+
+                      return Container(
+                        child: Row(
+                          children: <Widget>[
+                            CustomPaint(
+                              size: Size(
+                                constraints.maxWidth,
+                                height,
+                              ),
+                              foregroundPainter: WaveformPainter(
+                                widget.sampleData!,
+                                percent: startPosition,
+                                color: Color(0xff3994DB),
+                              ),
+                            ),
+                          ],
                         ),
-                        foregroundPainter: WaveformPainter(
-                          widget.sampleData!,
-                          startingFrame: widget.sampleData!
-                              .frameIdxFromPercent(startPosition),
-                          color: Color(0xff3994DB),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                      );
+                    });
               },
             ),
           ),
-          Flexible(
-            child: Slider(
-              activeColor: Colors.indigoAccent,
-              min: 0.0,
-              max: 100.0,
-              divisions: 42,
-              onChanged: (newstartPosition) {
-                setState(() => startPosition = newstartPosition);
-              },
-              value: startPosition,
-            ),
-          )
         ],
       ),
     );
@@ -77,17 +78,13 @@ class _PaintedWaveformState extends State<PaintedWaveform> {
 
 class WaveformPainter extends CustomPainter {
   final WaveformData data;
-  final int startingFrame;
-  final double zoomLevel;
+  final double percent;
   Paint? painter;
   final Color color;
   final double strokeWidth;
 
   WaveformPainter(this.data,
-      {this.strokeWidth = 1.0,
-      this.startingFrame = 0,
-      this.zoomLevel = 1,
-      this.color = Colors.blue}) {
+      {this.strokeWidth = 1.0, this.percent = 0.0, this.color = Colors.blue}) {
     painter = Paint()
       ..style = PaintingStyle.fill
       ..color = color
@@ -97,9 +94,14 @@ class WaveformPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path =
-        data.path(size, fromFrame: startingFrame, zoomLevel: zoomLevel);
+    final path = data.path(size, percent);
     canvas.drawPath(path, painter!);
+
+    var paint1 = Paint()
+      ..color = Color(0xFFFFFFFF)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawRect(Offset(size.width / 2, 0) & Size(2, size.height), paint1);
   }
 
   @override

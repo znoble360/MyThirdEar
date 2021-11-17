@@ -10,6 +10,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
 
+const int WAVEFORM_SAMPLES_PER_SECOND = 1000;
+const int SECONDS_IN_DISPLAY = 5;
+const int SAMPLES_IN_DISPLAY = WAVEFORM_SAMPLES_PER_SECOND * SECONDS_IN_DISPLAY;
+
 Future<WaveformData> loadWaveformData(String filename) async {
   Uri myUri = Uri.parse(filename);
   File audioFile = new File.fromUri(myUri);
@@ -54,64 +58,86 @@ class WaveformData {
     // if the scale is 0-1.0
     if (percent < 0.0) {
       percent = 0.0;
-    } else if (percent > 100.0) {
-      percent = 100.0;
+    } else if (percent > 1.0) {
+      percent = 1.0;
     }
 
-    int maxFrame = data.length - 5000;
-    int idx = (maxFrame * (percent / 100)).floor();
+    int idx = (data.length * percent).floor();
 
     return idx;
   }
 
-  Path path(Size size, {zoomLevel = 1.0, int fromFrame = 0}) {
+  Path path(Size size, double percent) {
     if (!_isDataScaled()) {
       _scaleData();
     }
 
-    int endFrame = fromFrame + 5000;
+    int middleFrame = frameIdxFromPercent(percent);
+    int startFrame = middleFrame - (SAMPLES_IN_DISPLAY ~/ 2) <= 0
+        ? 0
+        : middleFrame - (SAMPLES_IN_DISPLAY ~/ 2);
+    int endFrame = middleFrame + (SAMPLES_IN_DISPLAY ~/ 2) >= data.length
+        ? data.length - 1
+        : middleFrame + (SAMPLES_IN_DISPLAY ~/ 2);
 
-    print("Start frame = " + fromFrame.toString());
-    print("End frame = " + endFrame.toString());
-    print("Scaled data length = " + _scaledData.length.toString());
-
-    if (endFrame >= _scaledData.length) {
-      // Can't go past end of data.
-      fromFrame = 0;
-      endFrame = (_scaledData.length > 5000) ? 5000 : _scaledData.length;
-    }
-
-    return _path(_scaledData.sublist(fromFrame, endFrame), size);
+    return _path(_scaledData.sublist(startFrame, middleFrame),
+        _scaledData.sublist(middleFrame, endFrame), size);
   }
 
-  Path _path(List<double> samples, Size size) {
-    final middle = size.height / 2;
-    var i = 0;
+  Path _path(List<double> startSamples, List<double> endSamples, Size size) {
+    final middleHeight = size.height / 2;
+    final middleWidth = size.width / 2;
 
-    List<Offset> minPoints = [];
-    List<Offset> maxPoints = [];
+    List<Offset> minPointsStart = [];
+    List<Offset> maxPointsStart = [];
+    List<Offset> minPointsEnd = [];
+    List<Offset> maxPointsEnd = [];
 
-    final t = size.width / samples.length;
-    for (var _i = 0, _len = samples.length; _i < _len; _i++) {
-      var d = samples[_i];
+    final t = size.width / SAMPLES_IN_DISPLAY;
+
+    for (var _i = startSamples.length - 1, _offset = 0;
+        _i >= 0;
+        _i--, _offset++) {
+      var d = startSamples[_i];
 
       if (_i % 2 != 0) {
-        minPoints.add(Offset(t * i, middle - middle * d));
+        minPointsStart.add(
+            Offset(middleWidth - t * _offset, middleHeight - middleHeight * d));
       } else {
-        maxPoints.add(Offset(t * i, middle - middle * d));
+        maxPointsStart.add(
+            Offset(middleWidth - t * _offset, middleHeight - middleHeight * d));
       }
+    }
 
-      i++;
+    for (var _i = 0; _i < endSamples.length; _i++) {
+      var d = endSamples[_i];
+
+      if (_i % 2 != 0) {
+        minPointsEnd
+            .add(Offset(middleWidth + t * _i, middleHeight - middleHeight * d));
+      } else {
+        maxPointsEnd
+            .add(Offset(middleWidth + t * _i, middleHeight - middleHeight * d));
+      }
     }
 
     final path = Path();
-    path.moveTo(0, middle);
-    maxPoints.forEach((o) => path.lineTo(o.dx, o.dy));
-    // back to zero
-    path.lineTo(size.width, middle);
-    // draw the minimums backwards so we can fill the shape when done.
-    minPoints.reversed
-        .forEach((o) => path.lineTo(o.dx, middle - (middle - o.dy)));
+    path.moveTo(middleWidth, middleHeight);
+
+    if (maxPointsStart.isNotEmpty && minPointsStart.isNotEmpty) {
+      path.moveTo(maxPointsStart.first.dx, middleHeight);
+      maxPointsStart.forEach((o) => path.lineTo(o.dx, o.dy));
+      // back to zero
+      path.lineTo(maxPointsStart.last.dx, middleHeight);
+      // draw the minimums backwards so we can fill the shape when done.
+      minPointsStart.reversed.forEach(
+          (o) => path.lineTo(o.dx, middleHeight - (middleHeight - o.dy)));
+    }
+
+    minPointsEnd.forEach((o) => path.lineTo(o.dx, o.dy));
+    path.lineTo(minPointsEnd.last.dx, middleHeight);
+    maxPointsEnd.reversed.forEach(
+        (o) => path.lineTo(o.dx, middleHeight - (middleHeight - o.dy)));
 
     path.close();
     return path;
