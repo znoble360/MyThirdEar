@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:musictranscriptiontools/models/audioFile.dart';
 import 'package:musictranscriptiontools/models/library.dart';
 import 'package:musictranscriptiontools/screens/music_player_screen.dart';
 import 'package:musictranscriptiontools/screens/player.dart';
@@ -11,7 +13,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/src/provider.dart';
 
 class Library extends StatefulWidget {
-
   const Library({Key? key}) : super(key: key);
 
   @override
@@ -20,36 +21,87 @@ class Library extends StatefulWidget {
 
 class _LibraryState extends State<Library> {
   var _appDocDir;
+  late final Box box;
+
+  // Add the information about the audio file uploaded to the 'audioFileData' Hive box
+  _addAudioFileToHive(AudioFile audioFile) async {
+    AudioFileData newAudioFileData = new AudioFileData(
+        name: audioFile.name,
+        author: audioFile.author,
+        filepath: audioFile.filepath,
+        waveformBinPath: audioFile.waveformBinPath);
+    box.add(newAudioFileData);
+    print('newAudioFileData added to box!');
+  }
 
   @override
   void initState() {
     super.initState();
+    // Initialize Hive box
+    box = Hive.box('audioFileData');
     _init();
+  }
+
+  @override
+  void dispose() {
+    // Closes all Hive boxes
+    Hive.close();
+    super.dispose();
   }
 
   Future<void> _init() async {
     _appDocDir = await getApplicationDocumentsDirectory();
   }
 
-  void uploadAudioFile() async {
-    AudioFile? file =
-        await selectFileForPlayer(_appDocDir);
+  // Uploads audio file, adds it to the current library state and to the Hive box
+  Future<bool> uploadAudioFile() async {
+    AudioFile? file = await selectFileForPlayer(_appDocDir);
     if (file != null) {
       var library = context.read<LibraryModel>();
       library.addAudioFile(file);
+      _addAudioFileToHive(file);
+      setState(() {});
+      // If we got a new file return true
+      return true;
     }
     setState(() {});
+    // if it's a duplicate file, return false and show the dialog box
+    return false;
   }
+
+  // Dialog box to show when the user uploads a duplicate file
+  void showMyDialog(context) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+        title: const Text('Duplicate File'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: const <Widget>[
+              Text('It seems you have already uploaded this file.'),
+              Text(''),
+              Text('Please try to upload a new one.'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('Ok'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      )
+  );
+}
 
   @override
   Widget build(BuildContext context) {
-    var libraryLength = context
-        .select<LibraryModel, int>((library) => library.getLibraryLength());
-
     return Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            uploadAudioFile();
+            if (await uploadAudioFile() == false) return showMyDialog(context);
           },
           child: const Icon(Icons.file_upload),
           backgroundColor: Colors.blue,
@@ -60,8 +112,8 @@ class _LibraryState extends State<Library> {
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                  (context, index) => _MyListItem(index),
-                  childCount: libraryLength),
+                  (context, index) => _MyListItem(index, box),
+                  childCount: box.length),
             ),
           ],
         ),
@@ -73,7 +125,7 @@ class _LibraryState extends State<Library> {
               leading: Icon(Icons.file_upload),
               title: Text("Upload New Audio File"),
               onTap: () async {
-                uploadAudioFile();
+                if (await uploadAudioFile() == false) return showMyDialog(context);
               },
             ),
             ListTile(
@@ -106,11 +158,13 @@ class _MyAppBar extends StatelessWidget {
 
 class _MyListItem extends StatelessWidget {
   final int index;
+  final currentBox;
 
-  const _MyListItem(this.index, {Key? key}) : super(key: key);
+  const _MyListItem(this.index, this.currentBox, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    var audioFileData = currentBox.getAt(index)!;
     var item = context.select<LibraryModel, AudioFile>(
         (library) => library.getAllAudioFiles()[index]);
 
@@ -139,7 +193,7 @@ class _MyListItem extends StatelessWidget {
                   Icon(Icons.music_note),
                   Padding(padding: EdgeInsets.only(left: 10)),
                   Expanded(
-                    child: Text(item.name),
+                    child: Text(audioFileData.name),
                   ),
                 ],
               )),
