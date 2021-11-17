@@ -128,7 +128,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               ),
             ],
           ),
-          SizedBox(height: 5),
+          SizedBox(height: 70),
           hideRTA ? Flexible(
             child: PianoView(
               keyWidth: (80 * (0.5)),
