@@ -99,7 +99,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     });
   }
 
-  void setEndLoop() {
+  void setEndLoop() async {
     // TODO: add alert
     if (_player.position <= loopingStart) {
       loopingError = true;
@@ -109,12 +109,13 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
       loopingMode = "looping";
       loopingEnd = _player.position;
     });
-    _player.setClip(start: loopingStart, end: loopingEnd);
-    _player.setLoopMode(LoopMode.one);
+
+    await _player.setClip(start: loopingStart, end: loopingEnd);
+    await _player.setLoopMode(LoopMode.one);
   }
 
   void clearLoop() async {
-    _player.setLoopMode(LoopMode.off);
+    await _player.setLoopMode(LoopMode.off);
 
     String applicationDirectory = _audioFile.filepath;
     String audioFilePath = '${_appDocDir.path}/$applicationDirectory';
@@ -155,15 +156,15 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                 },
               ),
               // if (loopingError) TODO: add alert
-                if (loopingMode == "off")
-                  Container(
-                      child: Align(
-                    alignment: Alignment.center,
-                    child: TextButton.icon(
-                        onPressed: () => setStartLoop(),
-                        icon: Icon(Icons.loop_outlined),
-                        label: Text("Start Loop")),
-                  )),
+              if (loopingMode == "off")
+                Container(
+                    child: Align(
+                  alignment: Alignment.center,
+                  child: TextButton.icon(
+                      onPressed: () => setStartLoop(),
+                      icon: Icon(Icons.loop_outlined),
+                      label: Text("Start Loop")),
+                )),
               if (loopingMode == "start")
                 Container(
                     child: Align(
