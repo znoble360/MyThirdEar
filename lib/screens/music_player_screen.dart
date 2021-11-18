@@ -127,18 +127,16 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               ),
             ],
           ),
-          SizedBox(height: 5),
-          hideRTA
-              ? Flexible(
-                  child: PianoView(
-                    keyWidth: (80 * (0.5)),
-                    showLabels: true,
-                    labelsOnlyOctaves: false,
-                    disableScroll: false,
-                    feedback: false,
-                  ),
-                )
-              : SizedBox(height: 0)
+          SizedBox(height: 70),
+          hideRTA ? Flexible(
+            child: PianoView(
+              keyWidth: (80 * (0.5)),
+              showLabels: true,
+              labelsOnlyOctaves: false,
+              disableScroll: false,
+              feedback: false,
+            ),
+          ) : SizedBox(height: 0)
         ],
       ),
     );
