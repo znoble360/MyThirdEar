@@ -24,9 +24,13 @@ class MusicPlayer extends StatefulWidget {
 
 class _MusicPlayerPlayState extends State<MusicPlayer>
     with WidgetsBindingObserver {
-  var _player;
+  late AudioPlayer _player;
   var _audioFile;
   var _appDocDir;
+  var loopingMode;
+  var loopingStart;
+  var loopingEnd;
+  var loopingError;
 
   @override
   void initState() {
@@ -37,6 +41,8 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     ));
     _player = new AudioPlayer();
     _audioFile = widget.audioFile;
+    loopingMode = "off";
+    loopingError = false;
 
     _init();
   }
@@ -86,6 +92,42 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
           (position, bufferedPosition, duration) => PositionData(
               position, bufferedPosition, duration ?? Duration.zero));
 
+  void setStartLoop() {
+    setState(() {
+      loopingMode = "start";
+      loopingStart = _player.position;
+    });
+  }
+
+  void setEndLoop() async {
+    // TODO: add alert
+    if (_player.position <= loopingStart) {
+      loopingError = true;
+      return;
+    }
+    setState(() {
+      loopingMode = "looping";
+      loopingEnd = _player.position;
+    });
+
+    await _player.setClip(start: loopingStart, end: loopingEnd);
+    await _player.setLoopMode(LoopMode.one);
+  }
+
+  void clearLoop() async {
+    await _player.setLoopMode(LoopMode.off);
+
+    String applicationDirectory = _audioFile.filepath;
+    String audioFilePath = '${_appDocDir.path}/$applicationDirectory';
+
+    setState(() {
+      _player.pause();
+      _player = new AudioPlayer();
+      _player.setFilePath(audioFilePath);
+      loopingMode = "off";
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -113,6 +155,32 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                   );
                 },
               ),
+              // if (loopingError) TODO: add alert
+              if (loopingMode == "off")
+                Container(
+                    child: Align(
+                  alignment: Alignment.center,
+                  child: TextButton.icon(
+                      onPressed: () => setStartLoop(),
+                      icon: Icon(Icons.loop_outlined),
+                      label: Text("Start Loop")),
+                )),
+              if (loopingMode == "start")
+                Container(
+                    child: Align(
+                        alignment: Alignment.center,
+                        child: TextButton.icon(
+                            onPressed: () => setEndLoop(),
+                            icon: Icon(Icons.loop_outlined),
+                            label: Text("End Loop")))),
+              if (loopingMode == "looping")
+                Container(
+                    child: Align(
+                        alignment: Alignment.center,
+                        child: TextButton.icon(
+                            onPressed: () => clearLoop(),
+                            icon: Icon(Icons.cancel_outlined),
+                            label: Text("Clear Loop")))),
               ControlButtons(_player),
             ],
           ))),
@@ -170,7 +238,6 @@ class ControlButtons extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 6),
                 ],
               ),
             ),
@@ -209,7 +276,6 @@ class ControlButtons extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 6),
                 ],
               ),
             ),

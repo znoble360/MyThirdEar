@@ -84,14 +84,13 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
                         return PaintedWaveform(sampleData: snapshot.data);
                       }
                       return CircularProgressIndicator(
-                        color: Colors.blueAccent
-                      );
+                          color: Colors.blueAccent);
                     },
                   );
                 },
               )),
           Container(
-            height: 240,
+            height: 280,
             child: _player,
           ),
           Align(
@@ -129,15 +128,17 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
             ],
           ),
           SizedBox(height: 5),
-          hideRTA ? Flexible(
-            child: PianoView(
-              keyWidth: (80 * (0.5)),
-              showLabels: true,
-              labelsOnlyOctaves: false,
-              disableScroll: false,
-              feedback: false,
-            ),
-          ) : SizedBox(height: 0)
+          hideRTA
+              ? Flexible(
+                  child: PianoView(
+                    keyWidth: (80 * (0.5)),
+                    showLabels: true,
+                    labelsOnlyOctaves: false,
+                    disableScroll: false,
+                    feedback: false,
+                  ),
+                )
+              : SizedBox(height: 0)
         ],
       ),
     );
