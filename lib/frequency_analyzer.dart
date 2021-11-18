@@ -7,19 +7,36 @@ import 'package:image/image.dart';
 import 'package:musictranscriptiontools/wav_parser.dart';
 import 'package:fft/fft.dart';
 
-// Sample useage:
-//void main (List<String> args) {
+//// Sample useage:
+//void main () {
 //
-//  // args are: 
-//  // 1) input bin
-//  // 2) csv output name
-//  // 3) png output name
-//  File fp = File(args[0]);
+//  String soundFileName = "example.wav";
+//  String outputFileName = "example.bin";
 //
-//  Frequencies freq = Frequencies(fp);
-//  freq.generatePred(args[1]);
-//  freq.generateSpec(args[2]);
-//  //freq.printNotes();
+//  // takes the audio file at soundFileName
+//  // creates a waveform bin file at outputFileName,
+//  Wav.wavToBin(soundFileName, outputFileName);
+//
+//  File binFile = File(outputFileName);
+//
+//  // initialize an instance of Frequencies using the generated binFile
+//  Frequencies freq = Frequencies(binFile);
+//
+//  // generates the predictions array csv at predOutputLocation
+//  String predOutputLocation = "example.csv";
+//  freq.generatePred(predOutputLocation);
+//
+//  // generates the spectrograph png at specOutputLocation
+//  String specOutputLocation = "example.csv";
+//  freq.generateSpec(specOutputLocation);
+//
+//  // Frequencies.noteToLetterName(n) can be used to convert numbers 
+//  // in the predictions array to their corresponding note letter strings
+//  // this is printing the first note on the keyboard, which should be A.
+//  print(Frequencies.noteToLetterName(0));
+//
+//  // this is printing the last note on the keyboard, which should be C
+//  print(Frequencies.noteToLetterName(87));
 //
 //}
 
@@ -36,6 +53,7 @@ class Frequencies {
   final int TONAL_RESOLUTION_OF_SPEC = 11;
 
 
+  // fp should be the file location of the bin waveform file of an audio file
   Frequencies(File fp) {
     waveform = Wav.binToList(fp);
     //waveform = Wav.waveform[0];
@@ -179,6 +197,13 @@ class Frequencies {
   }
 
   // this will write a csv of the predictions to given the output file name
+  // this csv will be in the form of:
+  //    each row is one frame of the sound file
+  //    each column is the predicted intensity of each note on the keyboard
+  // so if you import the .csv into a 2d list "csv",
+  // the predicted intensity of A0 in the first instance of the audio file
+  // would be csv[0][0].
+  // intensity of A1 at the 3rd frame would be csv[3][12] (A1 would be note 12)
   void generatePred(String outFileName) {
     String csv = const ListToCsvConverter().convert(notes);
 
@@ -189,7 +214,7 @@ class Frequencies {
 
   // given the number of a key on an 88 key keyboard,
   // returns the note letter name associated with that keyboard key
-  String noteToLetterName(int note) {
+  static String noteToLetterName(int note) {
     int letter = note % 12;
     switch(letter) {
       case 0: {
@@ -239,6 +264,10 @@ class Frequencies {
       case 11: {
         return "G#/Ab";
       } break;
+
+      default: {
+        return "error";
+      }
 
     }
   }
