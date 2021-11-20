@@ -91,7 +91,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
                 },
               )),
           Container(
-            height: 240,
+            height: 280,
             child: _player,
           ),
           Align(
@@ -128,7 +128,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               ),
             ],
           ),
-          SizedBox(height: 5),
+          SizedBox(height: 70),
           hideRTA
               ? Flexible(
                   child: PianoView(
