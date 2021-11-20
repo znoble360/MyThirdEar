@@ -2,15 +2,15 @@
 
 import 'dart:io';
 
+import 'package:MyThirdEar/models/audioFile.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
-import 'package:musictranscriptiontools/models/audioFile.dart';
-import 'package:musictranscriptiontools/screens/library.dart';
-import 'package:musictranscriptiontools/models/library.dart';
-import 'package:musictranscriptiontools/ui/home/theme.dart';
+import 'package:MyThirdEar/screens/library.dart';
+import 'package:MyThirdEar/models/library.dart';
+import 'package:MyThirdEar/ui/home/theme.dart';
 import 'package:rxdart/rxdart.dart';
 
 Future<void> main() async {

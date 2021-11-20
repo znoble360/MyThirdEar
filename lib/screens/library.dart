@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:musictranscriptiontools/models/audioFile.dart';
-import 'package:musictranscriptiontools/models/library.dart';
-import 'package:musictranscriptiontools/screens/music_player_screen.dart';
-import 'package:musictranscriptiontools/screens/player.dart';
-import 'package:musictranscriptiontools/utils/file_handler.dart';
+import 'package:MyThirdEar/models/audioFile.dart';
+import 'package:MyThirdEar/models/library.dart';
+import 'package:MyThirdEar/screens/music_player_screen.dart';
+import 'package:MyThirdEar/screens/player.dart';
+import 'package:MyThirdEar/utils/file_handler.dart';
 import 'package:path_provider/path_provider.dart';
 // ignore: implementation_imports
 import 'package:provider/src/provider.dart';
