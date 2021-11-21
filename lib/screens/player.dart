@@ -205,82 +205,16 @@ class ControlButtons extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Container(
-              width: MediaQuery.of(context).size.width / 2,
-              decoration: BoxDecoration(
-                  border: Border.all(width: 0.5, color: Colors.grey)),
-              alignment: Alignment.topCenter,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.minimize),
-                        onPressed: () {
-                          if (player.speed > 0.5) {
-                            var speed = player.speed - 0.1;
-                            player.setSpeed(speed);
-                          }
-                        },
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(top: 30),
-                        child: Text('Speed'),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.add),
-                        onPressed: () {
-                          if (player.speed < 1.5) {
-                            var speed = player.speed + 0.1;
-                            player.setSpeed(speed);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+                width: MediaQuery.of(context).size.width / 2,
+                decoration: BoxDecoration(
+                    border: Border.all(width: 0.5, color: Colors.grey)),
+                alignment: Alignment.topCenter,
+                child: SpeedCard(player)),
             Container(
-              width: MediaQuery.of(context).size.width / 2,
-              decoration: BoxDecoration(
-                  border: Border.all(width: 0.5, color: Colors.grey)),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_drop_down),
-                        onPressed: () {
-                          if (player.pitch > 0) {
-                            var newPitch = player.pitch - 0.1;
-                            player.setPitch(newPitch);
-                            debugPrint('$newPitch');
-                          }
-                        },
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(top: 30),
-                        child: Text('Pitch'),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.arrow_drop_up),
-                        onPressed: () {
-                          if (player.pitch < 1.5) {
-                            var newPitch = player.pitch + 0.1;
-                            player.setPitch(newPitch);
-                            debugPrint('$newPitch');
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+                width: MediaQuery.of(context).size.width / 2,
+                decoration: BoxDecoration(
+                    border: Border.all(width: 0.5, color: Colors.grey)),
+                child: PitchCard(player)),
           ],
         ),
         Row(
