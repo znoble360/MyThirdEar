@@ -9,9 +9,7 @@ class LibraryModel {
   }
 
   deleteAudioFile(AudioFile file) {
-    print(audioFiles);
     audioFiles.remove(file);
-    print(audioFiles);
   }
 
   List<AudioFile> getAllAudioFiles() => audioFiles;
