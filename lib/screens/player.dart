@@ -16,6 +16,7 @@ import 'package:musictranscriptiontools/utils/common.dart';
 
 class MusicPlayer extends StatefulWidget {
   final AudioFile audioFile;
+  late Stream<PositionData> positionDataStream;
   MusicPlayer({required this.audioFile});
 
   @override
@@ -43,6 +44,15 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     _audioFile = widget.audioFile;
     loopingMode = "off";
     loopingError = false;
+
+    widget.positionDataStream =
+        Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
+                _player.positionStream.asBroadcastStream(),
+                _player.bufferedPositionStream.asBroadcastStream(),
+                _player.durationStream.asBroadcastStream(),
+                (position, bufferedPosition, duration) => PositionData(
+                    position, bufferedPosition, duration ?? Duration.zero))
+            .asBroadcastStream();
 
     _init();
   }
@@ -83,14 +93,6 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
       _player.stop();
     }
   }
-
-  Stream<PositionData> get _positionDataStream =>
-      Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
-          _player.positionStream,
-          _player.bufferedPositionStream,
-          _player.durationStream,
-          (position, bufferedPosition, duration) => PositionData(
-              position, bufferedPosition, duration ?? Duration.zero));
 
   void setStartLoop() {
     setState(() {
@@ -141,7 +143,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               StreamBuilder<PositionData>(
-                stream: _positionDataStream,
+                stream: widget.positionDataStream,
                 builder: (context, snapshot) {
                   final positionData = snapshot.data;
                   return SeekBar(
