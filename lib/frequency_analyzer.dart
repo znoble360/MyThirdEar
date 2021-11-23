@@ -39,6 +39,23 @@ import 'package:fft/fft.dart';
 //  print(Frequencies.noteToLetterName(87));
 //
 //}
+void main (List<String> args) {
+
+  // args are: 
+  // 1) input bin
+  // 2) csv output name
+  // 3) png output name
+  File fp = File(args[0]);
+
+  Frequencies freq = Frequencies(fp);
+  freq.generatePred(args[1]);
+  freq.generateChordPred(args[2]);
+  freq.generateSpec(args[3]);
+  //freq.printNotes();
+
+  //Frequencies.testDotProd();
+
+}
 
 class Frequencies {
   List<List> notes = [];
@@ -46,6 +63,8 @@ class Frequencies {
   List<int> waveform;
   Image spec;
   List<List> res = [];
+  List<List> chords = [];
+  List<List> chordPredictions = [];
 
   final int NUM_BINS = pow(2, 13);
   final int SAMPLE_RATE = 44100;
@@ -188,6 +207,77 @@ class Frequencies {
     }
 
     spec = _2dListToImage(spec_data);
+
+    List<List> oneOctave = [];
+    List<List> majorMasks = [];
+    List<List> minorMasks = [];
+
+    // make masks for major and minor triads
+    for (int i = 0; i < 12; i++) {
+      majorMasks.add(_majorChordMask(i));
+      minorMasks.add(_minorChordMask(i));
+    }
+
+    // condense note predictions array down to one octave or 12 notes
+    for (int i = 0; i < notes.length; i++) {
+      oneOctave.add([]);
+
+      for (int j = 0; j < 12; j++) {
+
+        int curIndex = j;
+        int count = 0;
+        double sum = 0;
+
+        while (curIndex < notes[0].length) {
+
+          sum += notes[i][curIndex];
+          curIndex += 12;
+          count++;
+
+        }
+
+        oneOctave[i].add(sum/count);
+      }
+    }
+
+    List majorChords = [];
+    List minorChords = [];
+
+    majorChords = _dotProd2d(oneOctave, majorMasks);
+    minorChords = _dotProd2d(oneOctave, oneOctave);
+
+
+    chordPredictions.add([]);
+    // find max prediction for each frame
+    for (int i = 0; i < majorChords.length; i++) {
+      num max = 0;
+      int maxIndex = 0;
+      bool major = true;
+      for (int j = 0; j < majorChords[i].length; j++) {
+        if (majorChords[i][j] > max) {
+          max = majorChords[i][j];
+          maxIndex = j;
+          major = true;
+        }
+        //if (minorChords[i][j] > max) {
+        //  max = minorChords[i][j];
+        //  maxIndex = j;
+        //  major = false;
+        //}
+      }
+
+      if (major) {
+        chordPredictions[0].add(maxIndex);
+      }
+      else {
+        chordPredictions[0].add(-1*maxIndex);
+      }
+    }
+
+
+
+
+
   }
 
   // this will write an image of the spectrograph to given the output file name
@@ -206,6 +296,20 @@ class Frequencies {
   // intensity of A1 at the 3rd frame would be csv[3][12] (A1 would be note 12)
   void generatePred(String outFileName) {
     String csv = const ListToCsvConverter().convert(notes);
+
+    var out = new File(outFileName).openWrite();
+    out.write(csv);
+    out.close();
+  }
+
+  // generates a list of the chords predicted at each frame of the audio file
+  // the prediction is in the form of 0-11 for each chromatic note in one octave
+  // starting at A, and the number will be + for major chords and - for minor chords.
+  // if there is a C minor chord being played at the first frame,
+  // then chordPredictions[0] == -3, 
+  // 0 being the frame, 3 being the A chord, - because it is minor.
+  void generateChordPred(String outFileName) {
+    String csv = const ListToCsvConverter().convert(chordPredictions);
 
     var out = new File(outFileName).openWrite();
     out.write(csv);
@@ -329,5 +433,93 @@ class Frequencies {
   double _binToNote(int binIndex) {
     double freq = _binToFreq(binIndex);
     return _freqToNote(freq);
+  }
+
+  List _majorChordMask(int note) {
+
+    List mask = List.filled(12, 0);
+    // the root
+    mask[note] = 1;
+    // the 5th
+    mask[(note+7)%12] = 0.5;
+    // the major 3rd
+    mask[(note+4)%12] = 0.33;
+    
+    return mask;
+  }
+
+  List _minorChordMask(int note) {
+
+    List mask = List.filled(12, 0);
+    // the root
+    mask[note] = 1;
+    // the 5th
+    mask[(note+7)%12] = 0.5;
+    // the minor 3rd
+    mask[(note+3)%12] = 0.33;
+    
+    return mask;
+  }
+
+  static void testDotProd() {
+    var a = [
+              [1,0,0,0,0],
+              [0,1,1,1,0],
+              [1,0,1,0,1],
+              [1,1,1,1,1],
+              [0,0,0,0,1],
+              [0,0,1,0,0]
+    ];
+
+    var b = [
+              [1,  0,0,0,0],
+              [0,  1,1,1,0],
+              [0.5,0,1,0,0.5],
+              [0,  0,0,0,0]
+    ];
+
+    print(_dotProd2d(a, b).toString());
+  }
+
+  static List _dotProd2d(List<List> a, List<List> b) {
+
+    if (a[0].length != b[0].length) {
+      print("Error: dot product dimensions don't match");
+    }
+
+    List res = [];
+
+    // loop through each frame of a
+    for (int i = 0; i < a.length; i++) {
+
+      res.add([]);
+
+
+      // loop through each layer in b
+      for (int j = 0; j < b.length; j++) {
+        double curSum = 0;
+
+        // loop through each weight in the current layer of b
+        for (int k = 0; k < b[j].length; k++) {
+          curSum += a[i][k] * b[j][k];
+        }
+
+        res[i].add(curSum);
+      }
+
+    }
+
+    return res;
+  }
+
+}
+
+class Chord {
+  int note;
+  bool major;
+
+  Chord(int note, bool major) {
+    this.note = note;
+    this.major = major;
   }
 }

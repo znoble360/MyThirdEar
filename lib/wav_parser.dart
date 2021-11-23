@@ -2,8 +2,8 @@
 
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
+//import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
+//import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
 
 //final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
@@ -160,13 +160,13 @@ class Wav {
   }
 
   // takes name of an audio file, writes the corresponding waveform bin to the outputFileName
-  static void wavToBin(String inputFileName, String outputFileName) {
+  //static void wavToBin(String inputFileName, String outputFileName) {
 
-    String toBinCommand = "ffmpeg -y -i " + inputFileName + " -ar 44100 -ac 1 -map 0:a -c:a pcm_s16le -f data " + outputFileName;
+  //  String toBinCommand = "ffmpeg -y -i " + inputFileName + " -ar 44100 -ac 1 -map 0:a -c:a pcm_s16le -f data " + outputFileName;
 
-    await FFmpegKit.executeAsync(toBinCommand);
+  //  await FFmpegKit.executeAsync(toBinCommand);
 
-  }
+  //}
 
   // takes a filepointer to a bin waveform file and returns the wave data in a list
   static List<int> binToList(File fp) {
