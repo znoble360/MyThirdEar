@@ -39,23 +39,25 @@ import 'package:fft/fft.dart';
 //  print(Frequencies.noteToLetterName(87));
 //
 //}
-void main (List<String> args) {
 
-  // args are: 
-  // 1) input bin
-  // 2) csv output name
-  // 3) png output name
-  File fp = File(args[0]);
 
-  Frequencies freq = Frequencies(fp);
-  freq.generatePred(args[1]);
-  freq.generateChordPred(args[2]);
-  freq.generateSpec(args[3]);
-  //freq.printNotes();
-
-  //Frequencies.testDotProd();
-
-}
+//void main (List<String> args) {
+//
+//  // args are: 
+//  // 1) input bin
+//  // 2) csv output name
+//  // 3) png output name
+//  File fp = File(args[0]);
+//
+//  Frequencies freq = Frequencies(fp);
+//  freq.generatePred(args[1]);
+//  freq.generateChordPred(args[2]);
+//  freq.generateSpec(args[3]);
+//  //freq.printNotes();
+//
+//  //Frequencies.testDotProd();
+//
+//}
 
 class Frequencies {
   List<List> notes = [];
