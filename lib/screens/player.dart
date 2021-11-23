@@ -16,6 +16,7 @@ import 'package:musictranscriptiontools/utils/common.dart';
 
 class MusicPlayer extends StatefulWidget {
   final AudioFile audioFile;
+  late Stream<PositionData> positionDataStream;
   MusicPlayer({required this.audioFile});
 
   @override
@@ -24,9 +25,13 @@ class MusicPlayer extends StatefulWidget {
 
 class _MusicPlayerPlayState extends State<MusicPlayer>
     with WidgetsBindingObserver {
-  var _player;
+  late AudioPlayer _player;
   var _audioFile;
   var _appDocDir;
+  var loopingMode;
+  var loopingStart;
+  var loopingEnd;
+  var loopingError;
 
   @override
   void initState() {
@@ -37,6 +42,17 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     ));
     _player = new AudioPlayer();
     _audioFile = widget.audioFile;
+    loopingMode = "off";
+    loopingError = false;
+
+    widget.positionDataStream =
+        Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
+                _player.positionStream.asBroadcastStream(),
+                _player.bufferedPositionStream.asBroadcastStream(),
+                _player.durationStream.asBroadcastStream(),
+                (position, bufferedPosition, duration) => PositionData(
+                    position, bufferedPosition, duration ?? Duration.zero))
+            .asBroadcastStream();
 
     _init();
   }
@@ -78,13 +94,41 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     }
   }
 
-  Stream<PositionData> get _positionDataStream =>
-      Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
-          _player.positionStream,
-          _player.bufferedPositionStream,
-          _player.durationStream,
-          (position, bufferedPosition, duration) => PositionData(
-              position, bufferedPosition, duration ?? Duration.zero));
+  void setStartLoop() {
+    setState(() {
+      loopingMode = "start";
+      loopingStart = _player.position;
+    });
+  }
+
+  void setEndLoop() async {
+    // TODO: add alert
+    if (_player.position <= loopingStart) {
+      loopingError = true;
+      return;
+    }
+    setState(() {
+      loopingMode = "looping";
+      loopingEnd = _player.position;
+    });
+
+    await _player.setClip(start: loopingStart, end: loopingEnd);
+    await _player.setLoopMode(LoopMode.one);
+  }
+
+  void clearLoop() async {
+    await _player.setLoopMode(LoopMode.off);
+
+    String applicationDirectory = _audioFile.filepath;
+    String audioFilePath = '${_appDocDir.path}/$applicationDirectory';
+
+    setState(() {
+      _player.pause();
+      _player = new AudioPlayer();
+      _player.setFilePath(audioFilePath);
+      loopingMode = "off";
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +143,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               StreamBuilder<PositionData>(
-                stream: _positionDataStream,
+                stream: widget.positionDataStream,
                 builder: (context, snapshot) {
                   final positionData = snapshot.data;
                   return SeekBar(
@@ -113,6 +157,32 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                   );
                 },
               ),
+              // if (loopingError) TODO: add alert
+              if (loopingMode == "off")
+                Container(
+                    child: Align(
+                  alignment: Alignment.center,
+                  child: TextButton.icon(
+                      onPressed: () => setStartLoop(),
+                      icon: Icon(Icons.loop_outlined),
+                      label: Text("Start Loop")),
+                )),
+              if (loopingMode == "start")
+                Container(
+                    child: Align(
+                        alignment: Alignment.center,
+                        child: TextButton.icon(
+                            onPressed: () => setEndLoop(),
+                            icon: Icon(Icons.loop_outlined),
+                            label: Text("End Loop")))),
+              if (loopingMode == "looping")
+                Container(
+                    child: Align(
+                        alignment: Alignment.center,
+                        child: TextButton.icon(
+                            onPressed: () => clearLoop(),
+                            icon: Icon(Icons.cancel_outlined),
+                            label: Text("Clear Loop")))),
               ControlButtons(_player),
             ],
           ))),
@@ -135,84 +205,16 @@ class ControlButtons extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Container(
-              width: MediaQuery.of(context).size.width / 2,
-              decoration: BoxDecoration(
-                  border: Border.all(width: 0.5, color: Colors.grey)),
-              alignment: Alignment.topCenter,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.minimize),
-                        onPressed: () {
-                          if (player.speed > 0.5) {
-                            var speed = player.speed - 0.1;
-                            player.setSpeed(speed);
-                          }
-                        },
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(top: 30),
-                        child: Text('Speed'),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.add),
-                        onPressed: () {
-                          if (player.speed < 1.5) {
-                            var speed = player.speed + 0.1;
-                            player.setSpeed(speed);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6),
-                ],
-              ),
-            ),
+                width: MediaQuery.of(context).size.width / 2,
+                decoration: BoxDecoration(
+                    border: Border.all(width: 0.5, color: Colors.grey)),
+                alignment: Alignment.topCenter,
+                child: SpeedCard(player)),
             Container(
-              width: MediaQuery.of(context).size.width / 2,
-              decoration: BoxDecoration(
-                  border: Border.all(width: 0.5, color: Colors.grey)),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_drop_down),
-                        onPressed: () {
-                          if (player.pitch > 0) {
-                            var newPitch = player.pitch - 0.1;
-                            player.setPitch(newPitch);
-                            debugPrint('$newPitch');
-                          }
-                        },
-                      ),
-                      Container(
-                        padding: EdgeInsets.only(top: 30),
-                        child: Text('Pitch'),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.arrow_drop_up),
-                        onPressed: () {
-                          if (player.pitch < 1.5) {
-                            var newPitch = player.pitch + 0.1;
-                            player.setPitch(newPitch);
-                            debugPrint('$newPitch');
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 6),
-                ],
-              ),
-            ),
+                width: MediaQuery.of(context).size.width / 2,
+                decoration: BoxDecoration(
+                    border: Border.all(width: 0.5, color: Colors.grey)),
+                child: PitchCard(player)),
           ],
         ),
         Row(
