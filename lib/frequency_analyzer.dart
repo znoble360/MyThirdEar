@@ -57,6 +57,7 @@ void main (List<String> args) {
 
 }
 
+
 class Frequencies {
   List<List> notes = [];
   List<List> spec_data = [];
@@ -278,6 +279,7 @@ class Frequencies {
 
 
 
+
   }
 
   // this will write an image of the spectrograph to given the output file name
@@ -315,6 +317,7 @@ class Frequencies {
     out.write(csv);
     out.close();
   }
+
 
   // given the number of a key on an 88 key keyboard,
   // returns the note letter name associated with that keyboard key
@@ -522,4 +525,5 @@ class Chord {
     this.note = note;
     this.major = major;
   }
+
 }

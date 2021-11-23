@@ -8,6 +8,7 @@ import 'package:musictranscriptiontools/screens/library.dart';
 import 'package:musictranscriptiontools/screens/player.dart';
 import 'package:musictranscriptiontools/ui/common/index.dart';
 import 'package:musictranscriptiontools/ui/common/piano_view.dart';
+import 'package:musictranscriptiontools/utils/common.dart';
 import 'package:musictranscriptiontools/utils/waveform.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
@@ -23,7 +24,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     with WidgetsBindingObserver {
   bool canVibrate = false;
   bool hideRTA = true;
-  var _player;
+  late MusicPlayer _player;
 
   @override
   void initState() {
@@ -72,26 +73,25 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               height: 160,
               child: StreamBuilder<String>(
                 stream: _player.audioFile.waveformFileController.stream,
-                initialData: "audio/data.dat",
                 builder:
                     (BuildContext __context, AsyncSnapshot<String> __snapshot) {
                   return FutureBuilder<WaveformData>(
                     future: loadWaveformData(__snapshot.data!),
                     builder: (context, AsyncSnapshot<WaveformData> snapshot) {
                       if (snapshot.hasData) {
-                        print(snapshot.data!.length);
-                        print("Got data, drawing waveform");
-                        return PaintedWaveform(sampleData: snapshot.data);
+                        return PaintedWaveform(
+                          sampleData: snapshot.data,
+                          positionDataStream: _player.positionDataStream,
+                        );
                       }
                       return CircularProgressIndicator(
-                        color: Colors.blueAccent
-                      );
+                          color: Colors.blueAccent);
                     },
                   );
                 },
               )),
           Container(
-            height: 240,
+            height: 280,
             child: _player,
           ),
           Align(
@@ -128,16 +128,18 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               ),
             ],
           ),
-          SizedBox(height: 5),
-          hideRTA ? Flexible(
-            child: PianoView(
-              keyWidth: (80 * (0.5)),
-              showLabels: true,
-              labelsOnlyOctaves: false,
-              disableScroll: false,
-              feedback: false,
-            ),
-          ) : SizedBox(height: 0)
+          SizedBox(height: 70),
+          hideRTA
+              ? Flexible(
+                  child: PianoView(
+                    keyWidth: (80 * (0.5)),
+                    showLabels: true,
+                    labelsOnlyOctaves: false,
+                    disableScroll: false,
+                    feedback: false,
+                  ),
+                )
+              : SizedBox(height: 0)
         ],
       ),
     );

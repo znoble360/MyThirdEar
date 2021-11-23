@@ -8,6 +8,10 @@ class LibraryModel {
     audioFiles.add(file);
   }
 
+  deleteAudioFile(AudioFile file) {
+    audioFiles.remove(file);
+  }
+
   List<AudioFile> getAllAudioFiles() => audioFiles;
   int getLibraryLength() => audioFiles.length;
 
@@ -22,5 +26,6 @@ class AudioFile {
   final String waveformBinPath;
   final BehaviorSubject<String> waveformFileController;
 
-  AudioFile(this.name, this.author, this.filepath, this.waveformFileController, this.waveformBinPath);
+  AudioFile(this.name, this.author, this.filepath, this.waveformFileController,
+      this.waveformBinPath);
 }

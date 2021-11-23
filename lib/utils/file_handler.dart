@@ -58,7 +58,7 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
 
     // Generate waveform binary data.
     String generateWaveformBinDataCmd =
-        '-i ${file.path} -v quiet -ac 1 -filter:a aresample=200 -map 0:a -c:a pcm_s16le -f data $waveformBinPath';
+        '-i ${file.path} -v quiet -ac 1 -filter:a aresample=1000 -map 0:a -c:a pcm_s16le -f data $waveformBinPath';
 
     FFmpegKit.executeAsync(generateWaveformBinDataCmd, (session) async {
       final returnCode = await session.getReturnCode();
