@@ -100,9 +100,9 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
   }
 
   void setEndLoop() async {
-    // TODO: add alert
     if (_player.position <= loopingStart) {
       loopingError = true;
+      showInvalidLoopDialog(context, loopingStart);
       return;
     }
     setState(() {
@@ -126,6 +126,26 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
       _player.setFilePath(audioFilePath);
       loopingMode = "off";
     });
+  }
+
+  void showInvalidLoopDialog(context, loopingStart) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('Invalid Loop'),
+              content: SingleChildScrollView(
+                child: Text(
+                        'Please make sure the end of the loop is after the start of the loop, [loop start: $loopingStart].'),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ));
   }
 
   @override
@@ -155,7 +175,6 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                   );
                 },
               ),
-              // if (loopingError) TODO: add alert
               if (loopingMode == "off")
                 Container(
                     child: Align(
