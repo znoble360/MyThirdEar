@@ -54,7 +54,7 @@ class WaveformData {
   }
 
   // get the frame position at a specific percent of the waveform. Can use a 0-1 or 0-100 range.
-  int frameIdxFromPercent(double percent) {
+  int frameIdxFromPercent(double percent, int firstFrame, int lastFrame) {
     // if the scale is 0-1.0
     if (percent < 0.0) {
       percent = 0.0;
@@ -62,22 +62,26 @@ class WaveformData {
       percent = 1.0;
     }
 
-    int idx = (data.length * percent).floor();
+    int length = lastFrame - firstFrame;
+    int idx = (length * percent).floor() + firstFrame;
 
     return idx;
   }
 
-  Path path(Size size, double percent) {
+  Path path(Size size, double percent, double startPercent, double endPercent) {
     if (!_isDataScaled()) {
       _scaleData();
     }
 
-    int middleFrame = frameIdxFromPercent(percent);
-    int startFrame = middleFrame - (SAMPLES_IN_DISPLAY ~/ 2) <= 0
-        ? 0
+    int firstFrame = frameIdxFromPercent(startPercent, 0, data.length);
+    int lastFrame = frameIdxFromPercent(endPercent, 0, data.length);
+
+    int middleFrame = frameIdxFromPercent(percent, firstFrame, lastFrame);
+    int startFrame = middleFrame - (SAMPLES_IN_DISPLAY ~/ 2) <= firstFrame
+        ? firstFrame
         : middleFrame - (SAMPLES_IN_DISPLAY ~/ 2);
-    int endFrame = middleFrame + (SAMPLES_IN_DISPLAY ~/ 2) >= data.length
-        ? data.length - 1
+    int endFrame = middleFrame + (SAMPLES_IN_DISPLAY ~/ 2) >= lastFrame
+        ? lastFrame
         : middleFrame + (SAMPLES_IN_DISPLAY ~/ 2);
 
     return _path(_scaledData.sublist(startFrame, middleFrame),

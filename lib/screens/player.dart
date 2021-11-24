@@ -28,8 +28,8 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
   var _audioFile;
   var _appDocDir;
   var loopingMode;
-  var loopingStart;
-  var loopingEnd;
+  late Duration loopingStart;
+  late Duration loopingEnd;
   var loopingError;
 
   @override
@@ -44,7 +44,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     loopingMode = "off";
     loopingError = false;
 
-    widget.musicPlayerScreenState.positionDataStream =
+    widget.musicPlayerScreenState.waveformConfig.positionDataStream =
         Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
                 _player.positionStream.asBroadcastStream(),
                 _player.bufferedPositionStream.asBroadcastStream(),
@@ -111,6 +111,13 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
       loopingEnd = _player.position;
     });
 
+    widget.musicPlayerScreenState.setState(() {
+      widget.musicPlayerScreenState.waveformConfig.startPercentage =
+          loopingStart.inMilliseconds / _player.duration!.inMilliseconds;
+      widget.musicPlayerScreenState.waveformConfig.endPercentage =
+          loopingEnd.inMilliseconds / _player.duration!.inMilliseconds;
+    });
+
     await _player.setClip(start: loopingStart, end: loopingEnd);
     await _player.setLoopMode(LoopMode.one);
   }
@@ -129,7 +136,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     });
 
     widget.musicPlayerScreenState.setState(() {
-      widget.musicPlayerScreenState.positionDataStream =
+      widget.musicPlayerScreenState.waveformConfig.positionDataStream =
           Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
                   _player.positionStream.asBroadcastStream(),
                   _player.bufferedPositionStream.asBroadcastStream(),
@@ -137,6 +144,8 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                   (position, bufferedPosition, duration) => PositionData(
                       position, bufferedPosition, duration ?? Duration.zero))
               .asBroadcastStream();
+
+      widget.musicPlayerScreenState.waveformConfig.setToDefault();
     });
   }
 
@@ -153,7 +162,8 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               StreamBuilder<PositionData>(
-                stream: widget.musicPlayerScreenState.positionDataStream,
+                stream: widget
+                    .musicPlayerScreenState.waveformConfig.positionDataStream,
                 builder: (context, snapshot) {
                   final positionData = snapshot.data;
                   return SeekBar(

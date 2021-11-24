@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:MyThirdEar/models/library.dart';
+import 'package:MyThirdEar/models/waveformConfig.dart';
 import 'package:MyThirdEar/utils/common.dart';
 import 'package:flutter/material.dart';
 import 'package:MyThirdEar/cards/waveform.dart';
@@ -26,7 +27,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
   bool canVibrate = false;
   bool hideRTA = true;
   late MusicPlayer _player;
-  late Stream<PositionData> positionDataStream;
+  WaveformConfig waveformConfig = WaveformConfig();
 
   @override
   void initState() {
@@ -84,10 +85,9 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     future: loadWaveformData(__snapshot.data!),
                     builder: (context, AsyncSnapshot<WaveformData> snapshot) {
                       if (snapshot.hasData) {
-                        print("Calling snapshot has data");
                         return PaintedWaveform(
-                          sampleData: snapshot.data,
-                          positionDataStream: positionDataStream,
+                          sampleData: snapshot.data!,
+                          config: waveformConfig,
                         );
                       }
                       return CircularProgressIndicator(
