@@ -210,11 +210,10 @@ class _MyListItemState extends State<_MyListItem> {
 
     return GestureDetector(
         onTap: () {
-          MusicPlayer player = new MusicPlayer(audioFile: item);
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => MusicPlayerScreen(player: player),
+              builder: (context) => MusicPlayerScreen(audioFile: item),
             ),
           );
         },
@@ -250,7 +249,8 @@ class _MyListItemState extends State<_MyListItem> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: new Text("Are you sure you want to delete this file?"),
-          content: new Text("This will delete all metadata and the related files from the file system."),
+          content: new Text(
+              "This will delete all metadata and the related files from the file system."),
           actions: <Widget>[
             new TextButton(
               child: new Text("Confirm Delete"),

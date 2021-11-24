@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:MyThirdEar/models/library.dart';
+import 'package:MyThirdEar/utils/common.dart';
 import 'package:flutter/material.dart';
 import 'package:MyThirdEar/cards/waveform.dart';
 
@@ -11,19 +13,20 @@ import 'package:MyThirdEar/ui/common/piano_view.dart';
 import 'package:MyThirdEar/utils/waveform.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
-  final MusicPlayer player;
+  final AudioFile audioFile;
 
-  MusicPlayerScreen({required this.player});
+  MusicPlayerScreen({required this.audioFile});
 
   @override
-  _MusicPlayerScreenState createState() => _MusicPlayerScreenState();
+  MusicPlayerScreenState createState() => MusicPlayerScreenState();
 }
 
-class _MusicPlayerScreenState extends State<MusicPlayerScreen>
+class MusicPlayerScreenState extends State<MusicPlayerScreen>
     with WidgetsBindingObserver {
   bool canVibrate = false;
   bool hideRTA = true;
   late MusicPlayer _player;
+  late Stream<PositionData> positionDataStream;
 
   @override
   void initState() {
@@ -31,7 +34,10 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     Future.delayed(Duration(seconds: 60)).then((_) {
       if (mounted) ReviewUtils.requestReview();
     });
-    _player = widget.player;
+    _player = MusicPlayer(
+      audioFile: widget.audioFile,
+      musicPlayerScreenState: this,
+    );
   }
 
   @override
@@ -78,9 +84,10 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
                     future: loadWaveformData(__snapshot.data!),
                     builder: (context, AsyncSnapshot<WaveformData> snapshot) {
                       if (snapshot.hasData) {
+                        print("Calling snapshot has data");
                         return PaintedWaveform(
                           sampleData: snapshot.data,
-                          positionDataStream: _player.positionDataStream,
+                          positionDataStream: positionDataStream,
                         );
                       }
                       return CircularProgressIndicator(

@@ -1,5 +1,6 @@
 import 'package:MyThirdEar/cards/pitch.dart';
 import 'package:MyThirdEar/cards/speed.dart';
+import 'package:MyThirdEar/screens/music_player_screen.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,8 +15,8 @@ import 'package:MyThirdEar/utils/common.dart';
 
 class MusicPlayer extends StatefulWidget {
   final AudioFile audioFile;
-  late Stream<PositionData> positionDataStream;
-  MusicPlayer({required this.audioFile});
+  MusicPlayerScreenState musicPlayerScreenState;
+  MusicPlayer({required this.audioFile, required this.musicPlayerScreenState});
 
   @override
   _MusicPlayerPlayState createState() => _MusicPlayerPlayState();
@@ -43,7 +44,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     loopingMode = "off";
     loopingError = false;
 
-    widget.positionDataStream =
+    widget.musicPlayerScreenState.positionDataStream =
         Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
                 _player.positionStream.asBroadcastStream(),
                 _player.bufferedPositionStream.asBroadcastStream(),
@@ -126,6 +127,17 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
       _player.setFilePath(audioFilePath);
       loopingMode = "off";
     });
+
+    widget.musicPlayerScreenState.setState(() {
+      widget.musicPlayerScreenState.positionDataStream =
+          Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
+                  _player.positionStream.asBroadcastStream(),
+                  _player.bufferedPositionStream.asBroadcastStream(),
+                  _player.durationStream.asBroadcastStream(),
+                  (position, bufferedPosition, duration) => PositionData(
+                      position, bufferedPosition, duration ?? Duration.zero))
+              .asBroadcastStream();
+    });
   }
 
   @override
@@ -141,7 +153,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               StreamBuilder<PositionData>(
-                stream: widget.positionDataStream,
+                stream: widget.musicPlayerScreenState.positionDataStream,
                 builder: (context, snapshot) {
                   final positionData = snapshot.data;
                   return SeekBar(
