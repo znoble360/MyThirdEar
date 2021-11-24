@@ -10,6 +10,7 @@
 .svn/
 .vscode
 *.code-workspace
+lib/zach/*
 
 # IntelliJ related
 *.iml

@@ -46,7 +46,6 @@ class MyApp extends StatelessWidget {
     // get the full path to waveformBin file
     String applicationDirectory = currentAudioFile.waveformBinPath;
     String waveformBinPath = '${appDocDir.path}/$applicationDirectory';
-    print((waveformBinPath));
 
       // Link the waveform file controller to the waveform bin path
       var waveformFileController = new BehaviorSubject<String>();

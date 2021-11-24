@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -69,32 +70,55 @@ class _LibraryState extends State<Library> {
     return false;
   }
 
+  // removes audio file data from Library model, Hive box, and file system
+  void removeAudioFile(AudioFile audioFile, int index) async {
+    var library = context.read<LibraryModel>();
+    // remove file from library model
+    library.deleteAudioFile(audioFile);
+
+    // remove file from Hive DB
+    _deleteAudioFileFromHive(audioFile, index);
+
+    String folderName = audioFile.filepath.split('/')[0];
+    Directory _appDocDir = await getApplicationDocumentsDirectory();
+
+    // delete files from file system
+    Directory directory = Directory('${_appDocDir.path}/$folderName');
+    directory.delete(recursive: true);
+    setState(() {});
+  }
+
+  // removes AudioFileData from Hive box
+  _deleteAudioFileFromHive(AudioFile audioFile, int index) {
+    box.deleteAt(index);
+    print('${audioFile.name} was removed from the box!');
+  }
+
   // Dialog box to show when the user uploads a duplicate file
   void showMyDialog(context) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-        title: const Text('Duplicate File'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: const <Widget>[
-              Text('It seems you have already uploaded this file.'),
-              Text(''),
-              Text('Please try to upload a new one.'),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: const Text('Ok'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      )
-  );
-}
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              title: const Text('Duplicate File'),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: const <Widget>[
+                    Text('It seems you have already uploaded this file.'),
+                    Text(''),
+                    Text('Please try to upload a new one.'),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Ok'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +136,7 @@ class _LibraryState extends State<Library> {
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                  (context, index) => _MyListItem(index, box),
+                  (context, index) => _MyListItem(index, box, removeAudioFile),
                   childCount: box.length),
             ),
           ],
@@ -125,7 +149,8 @@ class _LibraryState extends State<Library> {
               leading: Icon(Icons.file_upload),
               title: Text("Upload New Audio File"),
               onTap: () async {
-                if (await uploadAudioFile() == false) return showMyDialog(context);
+                if (await uploadAudioFile() == false)
+                  return showMyDialog(context);
               },
             ),
             ListTile(
@@ -156,17 +181,32 @@ class _MyAppBar extends StatelessWidget {
   }
 }
 
-class _MyListItem extends StatelessWidget {
+class _MyListItem extends StatefulWidget {
   final int index;
   final currentBox;
+  final callback;
 
-  const _MyListItem(this.index, this.currentBox, {Key? key}) : super(key: key);
+  const _MyListItem(this.index, this.currentBox, this.callback, {Key? key})
+      : super(key: key);
+
+  @override
+  _MyListItemState createState() => _MyListItemState();
+}
+
+class _MyListItemState extends State<_MyListItem> {
+  var audioFileData;
+  var item;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    var audioFileData = currentBox.getAt(index)!;
-    var item = context.select<LibraryModel, AudioFile>(
-        (library) => library.getAllAudioFiles()[index]);
+    audioFileData = widget.currentBox.getAt(widget.index)!;
+    item = context.select<LibraryModel, AudioFile>(
+        (library) => library.getAllAudioFiles()[widget.index]);
 
     return GestureDetector(
         onTap: () {
@@ -195,8 +235,39 @@ class _MyListItem extends StatelessWidget {
                   Expanded(
                     child: Text(audioFileData.name),
                   ),
+                  IconButton(
+                      onPressed: () => _showConfirmDeleteDialog(),
+                      icon: Icon(Icons.delete)),
+                  Padding(padding: EdgeInsets.only(right: 15)),
                 ],
               )),
         ));
+  }
+
+  void _showConfirmDeleteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: new Text("Are you sure you want to delete this file?"),
+          content: new Text("This will delete all metadata and the related files from the file system."),
+          actions: <Widget>[
+            new TextButton(
+              child: new Text("Confirm Delete"),
+              onPressed: () {
+                widget.callback(item, widget.index);
+                Navigator.of(context).pop();
+              },
+            ),
+            new TextButton(
+              child: new Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

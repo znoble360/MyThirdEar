@@ -35,6 +35,9 @@ dependencies:
   vibrate: ^0.0.4
   just_audio: ^0.9.10
   audio_session: ^0.1.5
+  fft: '^0.3.0'
+  image: ^3.0.8
+  csv: ^5.0.0
   rxdart: "^0.27.0"
   flutter_screenutil: ^5.0.0+2
   provider: ^6.0.0
