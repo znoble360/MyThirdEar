@@ -56,12 +56,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
         ]),
       )),
       appBar: (AppBar(
+        backgroundColor: Colors.blue,
         title: Text(
           'MyThirdEar',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Indies',
-            fontSize: 25.0,
+            fontSize: 25,
           ),
         ),
       )),
