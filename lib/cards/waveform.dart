@@ -1,3 +1,4 @@
+import 'package:MyThirdEar/models/waveformConfig.dart';
 import 'package:MyThirdEar/utils/common.dart';
 import 'package:flutter/material.dart';
 import 'package:MyThirdEar/utils/waveform.dart';
@@ -5,12 +6,12 @@ import 'package:MyThirdEar/utils/waveform.dart';
 class PaintedWaveform extends StatefulWidget {
   PaintedWaveform({
     Key? key,
-    @required this.sampleData,
-    @required this.positionDataStream,
+    required this.sampleData,
+    required this.config,
   }) : super(key: key);
 
-  final WaveformData? sampleData;
-  final Stream<PositionData>? positionDataStream;
+  final WaveformData sampleData;
+  final WaveformConfig config;
 
   @override
   _PaintedWaveformState createState() => _PaintedWaveformState();
@@ -40,7 +41,7 @@ class _PaintedWaveformState extends State<PaintedWaveform> {
                 }
 
                 return StreamBuilder<PositionData>(
-                    stream: widget.positionDataStream,
+                    stream: widget.config.positionDataStream,
                     builder: (BuildContext context2,
                         AsyncSnapshot<PositionData> snapshot2) {
                       startPosition = snapshot2.data == null
@@ -58,7 +59,8 @@ class _PaintedWaveformState extends State<PaintedWaveform> {
                                 height,
                               ),
                               foregroundPainter: WaveformPainter(
-                                widget.sampleData!,
+                                widget.sampleData,
+                                widget.config,
                                 percent: startPosition,
                                 color: Color(0xff3994DB),
                               ),
@@ -77,13 +79,14 @@ class _PaintedWaveformState extends State<PaintedWaveform> {
 }
 
 class WaveformPainter extends CustomPainter {
+  final WaveformConfig config;
   final WaveformData data;
   final double percent;
   Paint? painter;
   final Color color;
   final double strokeWidth;
 
-  WaveformPainter(this.data,
+  WaveformPainter(this.data, this.config,
       {this.strokeWidth = 1.0, this.percent = 0.0, this.color = Colors.blue}) {
     painter = Paint()
       ..style = PaintingStyle.fill
@@ -94,7 +97,12 @@ class WaveformPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = data.path(size, percent);
+    final path = data.path(
+      size,
+      percent,
+      config.startPercentage,
+      config.endPercentage,
+    );
     canvas.drawPath(path, painter!);
 
     var paint1 = Paint()
