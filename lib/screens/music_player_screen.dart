@@ -67,31 +67,34 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
       )),
       body: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(
-              height: 160,
-              child: StreamBuilder<String>(
-                stream: _player.audioFile.waveformFileController.stream,
-                builder:
-                    (BuildContext __context, AsyncSnapshot<String> __snapshot) {
-                  return FutureBuilder<WaveformData>(
-                    future: loadWaveformData(__snapshot.data!),
-                    builder: (context, AsyncSnapshot<WaveformData> snapshot) {
-                      if (snapshot.hasData) {
-                        return PaintedWaveform(
-                          sampleData: snapshot.data,
-                          positionDataStream: _player.positionDataStream,
-                        );
-                      }
-                      return CircularProgressIndicator(
-                          color: Colors.blueAccent);
+          hideRTA
+              ? SizedBox(
+                  height: 160,
+                  child: StreamBuilder<String>(
+                    stream: _player.audioFile.waveformFileController.stream,
+                    builder: (BuildContext __context,
+                        AsyncSnapshot<String> __snapshot) {
+                      return FutureBuilder<WaveformData>(
+                        future: loadWaveformData(__snapshot.data!),
+                        builder:
+                            (context, AsyncSnapshot<WaveformData> snapshot) {
+                          if (snapshot.hasData) {
+                            return PaintedWaveform(
+                              sampleData: snapshot.data,
+                              positionDataStream: _player.positionDataStream,
+                            );
+                          }
+                          return CircularProgressIndicator(
+                              color: Colors.blueAccent);
+                        },
+                      );
                     },
-                  );
-                },
-              )),
+                  ))
+              : Container(height: 1),
           Container(
-            height: 280,
+            height: 300,
             child: _player,
           ),
           Align(
@@ -110,25 +113,36 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               ],
             ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                children: [
-                  Text(hideRTA ? 'Estimated Chord' : ''),
-                  Text(hideRTA ? 'Cmaj7' : ''),
-                ],
-              ),
-              Column(
-                children: [
-                  Text(hideRTA ? 'Estimated BPM' : ''),
-                  Text(hideRTA ? '117' : ''),
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: 70),
+          hideRTA
+              ? Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      children: [
+                        Text('Estimated Chord'),
+                        Text('Cmaj7'),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text('Estimated BPM'),
+                        Text('117'),
+                      ],
+                    ),
+                  ],
+                )
+              : Container(
+                  height: 390,
+                  child: SingleChildScrollView(
+                    child: Image.asset(
+                      'assets/images/demo.jpg',
+                      height: 500,
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+          SizedBox(height: hideRTA ? 70 : 0),
           hideRTA
               ? Flexible(
                   child: PianoView(
@@ -139,7 +153,13 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
                     feedback: false,
                   ),
                 )
-              : SizedBox(height: 0)
+              : Container(
+                  height: 82,
+                  child: Image.asset(
+                    'assets/images/piano.png',
+                    fit: BoxFit.fill,
+                  ),
+                )
         ],
       ),
     );

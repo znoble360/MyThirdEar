@@ -59,7 +59,7 @@ class PianoSlider extends StatelessWidget {
           Positioned(
               left: 0.0,
               right: 0.0,
-              bottom: 15.0,
+              bottom: 10.0,
               top: 0.0,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

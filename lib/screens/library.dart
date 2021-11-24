@@ -120,25 +120,82 @@ class _LibraryState extends State<Library> {
             ));
   }
 
+  getContentView() {
+    if (box.length == 0) {
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+            (context, index) => Center(
+                  child: Column(
+                    children: [
+                      SizedBox(height: 100),
+                      Icon(
+                        Icons.music_note,
+                        color: Colors.black,
+                        size: 60,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'No audio files yet...',
+                        style: TextStyle(fontSize: 25),
+                      )
+                    ],
+                  ),
+                ),
+            childCount: 1),
+      );
+    } else {
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+            (context, index) => _MyListItem(index, box, removeAudioFile),
+            childCount: box.length),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            if (await uploadAudioFile() == false) return showMyDialog(context);
-          },
-          child: const Icon(Icons.file_upload),
-          backgroundColor: Colors.blue,
-        ),
-        body: CustomScrollView(
-          slivers: [
-            _MyAppBar(),
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                  (context, index) => _MyListItem(index, box, removeAudioFile),
-                  childCount: box.length),
+        // floatingActionButton: FloatingActionButton(
+        //   onPressed: () async {
+        //     if (await uploadAudioFile() == false) return showMyDialog(context);
+        //   },
+        //   child: const Icon(Icons.file_upload),
+        //   backgroundColor: Colors.blue,
+        // ),
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: [
+                _MyAppBar(),
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                getContentView()
+              ],
             ),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: GestureDetector(
+                  onTap: () async {
+                    if (await uploadAudioFile() == false)
+                      return showMyDialog(context);
+                  },
+                  child: Container(
+                    width: 150,
+                    height: 50,
+                    margin: EdgeInsets.only(bottom: 50, right: 15),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(15)),
+                        border: Border.all(color: Colors.blue, width: 1)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Upload New File'),
+                        SizedBox(width: 5),
+                        Icon(Icons.file_upload, color: Colors.blue)
+                      ],
+                    ),
+                  )),
+            )
           ],
         ),
         drawer: Drawer(
@@ -146,7 +203,7 @@ class _LibraryState extends State<Library> {
           children: <Widget>[
             Container(height: 20.0),
             ListTile(
-              leading: Icon(Icons.file_upload),
+              leading: Icon(Icons.file_upload, color: Colors.blue),
               title: Text("Upload New Audio File"),
               onTap: () async {
                 if (await uploadAudioFile() == false)
@@ -250,7 +307,8 @@ class _MyListItemState extends State<_MyListItem> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: new Text("Are you sure you want to delete this file?"),
-          content: new Text("This will delete all metadata and the related files from the file system."),
+          content: new Text(
+              "This will delete all metadata and the related files from the file system."),
           actions: <Widget>[
             new TextButton(
               child: new Text("Confirm Delete"),

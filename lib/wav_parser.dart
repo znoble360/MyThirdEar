@@ -160,7 +160,7 @@ class Wav {
   }
 
   // takes name of an audio file, writes the corresponding waveform bin to the outputFileName
-  static void wavToBin(String inputFileName, String outputFileName) {
+  static Future<void> wavToBin(String inputFileName, String outputFileName) async {
 
     String toBinCommand = "ffmpeg -y -i " + inputFileName + " -ar 44100 -ac 1 -map 0:a -c:a pcm_s16le -f data " + outputFileName;
 
