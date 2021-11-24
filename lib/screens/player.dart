@@ -1,3 +1,5 @@
+import 'package:MyThirdEar/cards/pitch.dart';
+import 'package:MyThirdEar/cards/speed.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';

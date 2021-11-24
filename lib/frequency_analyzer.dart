@@ -4,7 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:csv/csv.dart';
 import 'package:image/image.dart';
-import 'package:musictranscriptiontools/wav_parser.dart';
+import 'package:MyThirdEar/wav_parser.dart';
 import 'package:fft/fft.dart';
 
 //// Sample useage:
@@ -30,7 +30,7 @@ import 'package:fft/fft.dart';
 //  String specOutputLocation = "example.csv";
 //  freq.generateSpec(specOutputLocation);
 //
-//  // Frequencies.noteToLetterName(n) can be used to convert numbers 
+//  // Frequencies.noteToLetterName(n) can be used to convert numbers
 //  // in the predictions array to their corresponding note letter strings
 //  // this is printing the first note on the keyboard, which should be A.
 //  print(Frequencies.noteToLetterName(0));
@@ -52,7 +52,6 @@ class Frequencies {
   final int NOTES_ON_KEYBOARD = 88;
   final int TONAL_RESOLUTION_OF_SPEC = 11;
 
-
   // fp should be the file location of the bin waveform file of an audio file
   Frequencies(File fp) {
     waveform = Wav.binToList(fp);
@@ -66,28 +65,27 @@ class Frequencies {
 
     final int transformSize = NUM_BINS;
 
-    int numFrames = (waveform.length/transformSize).toInt();
+    int numFrames = (waveform.length / transformSize).toInt();
 
     // make fft for every chunk of time
     for (int i = 0; i < numFrames; i++) {
-
       res.add([]);
 
       int start = i * transformSize;
-      int end = (i+1) * transformSize;
+      int end = (i + 1) * transformSize;
       num max = 0;
       int maxIndex = 0;
       var fft = new FFT().Transform(waveform.sublist(start, end));
 
       if (fft.length != NUM_BINS) {
-        print("uh oh, we have " + 
-            fft.length.toString() + 
-            " bins, not " + 
-            NUM_BINS.toString() + 
+        print("uh oh, we have " +
+            fft.length.toString() +
+            " bins, not " +
+            NUM_BINS.toString() +
             " bins");
       }
 
-      // for each bin in the transform, compute the magnitude (aka modulus) 
+      // for each bin in the transform, compute the magnitude (aka modulus)
       // of the complex result, then normalize
       for (int j = 0; j < NUM_BINS; j++) {
         num mag = fft[j].modulus;
@@ -108,7 +106,6 @@ class Frequencies {
       for (int j = 0; j < NUM_BINS; j++) {
         res[i][j] /= max;
       }
-
     }
 
     // populate predictions for notes
@@ -129,11 +126,9 @@ class Frequencies {
       }
       int top = _noteToBin(NOTES_ON_KEYBOARD.toDouble()).round();
       for (int j = _noteToBin(-0.5).toInt(); j < top; j++) {
-
         // to catch when we have reached the boundary between
         // curNote and the next note
-        if (j >= _noteToBin(curNote+0.5)) {
-
+        if (j >= _noteToBin(curNote + 0.5)) {
           double predIntensity = curSum / curNumBins;
           notes[i].add(predIntensity);
 
@@ -144,10 +139,8 @@ class Frequencies {
 
         curSum += res[i][j];
         curNumBins++;
-
       }
     }
-
 
     // generate data for spectrograph, scaling logarithmically
     // loop through each frame of res
@@ -156,17 +149,16 @@ class Frequencies {
 
       // loop through each note on the keyboard
       for (int j = 0; j < NOTES_ON_KEYBOARD; j++) {
-        int noteStart = _noteToBin(j.toDouble()-0.5).toInt();
-        int noteEnd = _noteToBin(j.toDouble()+0.5).toInt();
+        int noteStart = _noteToBin(j.toDouble() - 0.5).toInt();
+        int noteEnd = _noteToBin(j.toDouble() + 0.5).toInt();
 
         // cut each note on the keyboard into TONAL_RESOLUTION_OF_SPEC slices
         // then loop through each slice
         for (int k = 0; k < TONAL_RESOLUTION_OF_SPEC; k++) {
-
           double curNoteChunkStart =
-              j + (k.toDouble()/TONAL_RESOLUTION_OF_SPEC.toDouble());
+              j + (k.toDouble() / TONAL_RESOLUTION_OF_SPEC.toDouble());
           double curNoteChunkEnd =
-              j + ((k+1).toDouble()/TONAL_RESOLUTION_OF_SPEC.toDouble()); 
+              j + ((k + 1).toDouble() / TONAL_RESOLUTION_OF_SPEC.toDouble());
           int bin = _noteToBin(curNoteChunkStart).toInt();
 
           double curSum = 0;
@@ -179,10 +171,9 @@ class Frequencies {
             bin++;
           }
 
-          double avg = curSum/curNumBins.toDouble();
+          double avg = curSum / curNumBins.toDouble();
 
           spec_data[i].add(avg);
-
         }
       }
     }
@@ -216,70 +207,92 @@ class Frequencies {
   // returns the note letter name associated with that keyboard key
   static String noteToLetterName(int note) {
     int letter = note % 12;
-    switch(letter) {
-      case 0: {
-        return "A";
-      } break;
+    switch (letter) {
+      case 0:
+        {
+          return "A";
+        }
+        break;
 
-      case 1: {
-        return "A#/Bb";
-      } break;
+      case 1:
+        {
+          return "A#/Bb";
+        }
+        break;
 
-      case 2: {
-        return "B/Cb";
-      } break;
+      case 2:
+        {
+          return "B/Cb";
+        }
+        break;
 
-      case 3: {
-        return "C";
-      } break;
+      case 3:
+        {
+          return "C";
+        }
+        break;
 
-      case 4: {
-        return "C#/Db";
-      } break;
+      case 4:
+        {
+          return "C#/Db";
+        }
+        break;
 
-      case 5: {
-        return "D";
-      } break;
+      case 5:
+        {
+          return "D";
+        }
+        break;
 
-      case 6: {
-        return "D#/Eb";
-      } break;
+      case 6:
+        {
+          return "D#/Eb";
+        }
+        break;
 
-      case 7: {
-        return "E";
-      } break;
+      case 7:
+        {
+          return "E";
+        }
+        break;
 
-      case 8: {
-        return "F";
-      } break;
+      case 8:
+        {
+          return "F";
+        }
+        break;
 
-      case 9: {
-        return "F#/Gb";
-      } break;
+      case 9:
+        {
+          return "F#/Gb";
+        }
+        break;
 
-      case 10: {
-        return "G";
-      } break;
+      case 10:
+        {
+          return "G";
+        }
+        break;
 
-      case 11: {
-        return "G#/Ab";
-      } break;
+      case 11:
+        {
+          return "G#/Ab";
+        }
+        break;
 
-      default: {
-        return "error";
-      }
-
+      default:
+        {
+          return "error";
+        }
     }
   }
 
   // populates an image given a 2d array of intensity values
   Image _2dListToImage(List list) {
-
     Image img = Image(list[0].length, list.length);
 
     for (int i = 0; i < img.height; i++) {
       for (int j = 0; j < img.width; j++) {
-
         int colorR = 255;
         int colorG = 255;
         int colorB = 255;
@@ -296,13 +309,13 @@ class Frequencies {
 
   // given a note, returns the corresponding frequency associated with it
   double _noteToFreq(double note) {
-    return pow(2, (note/12)) * 27.5;
+    return pow(2, (note / 12)) * 27.5;
   }
 
   // given frequency, returns the note value
   double _freqToNote(double freq) {
     // base conversion from ln to log_2
-    double log_2 = log(freq/27.5) / ln2;
+    double log_2 = log(freq / 27.5) / ln2;
     return 12 * log_2;
   }
 
