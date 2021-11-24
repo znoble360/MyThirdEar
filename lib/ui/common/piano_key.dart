@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tonic/tonic.dart';
 
-import 'package:musictranscriptiontools/plugins/midi/midi.dart';
-import 'package:musictranscriptiontools/plugins/vibrate/vibrate.dart';
-import 'package:musictranscriptiontools/ui/home/theme.dart';
+import 'package:MyThirdEar/plugins/midi/midi.dart';
+import 'package:MyThirdEar/plugins/vibrate/vibrate.dart';
+import 'package:MyThirdEar/ui/home/theme.dart';
 
 class PianoKey extends StatelessWidget {
   const PianoKey({

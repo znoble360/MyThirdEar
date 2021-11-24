@@ -1,4 +1,4 @@
-package com.example.musictranscriptiontools
+package com.package.MyThirdEar
 
 import io.flutter.embedding.android.FlutterActivity
 

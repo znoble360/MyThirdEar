@@ -1,6 +1,6 @@
+import 'package:MyThirdEar/utils/common.dart';
 import 'package:flutter/material.dart';
-import 'package:musictranscriptiontools/utils/common.dart';
-import 'package:musictranscriptiontools/utils/waveform.dart';
+import 'package:MyThirdEar/utils/waveform.dart';
 
 class PaintedWaveform extends StatefulWidget {
   PaintedWaveform({

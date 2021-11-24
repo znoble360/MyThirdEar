@@ -6,7 +6,7 @@ import 'package:crypto/crypto.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
-import 'package:musictranscriptiontools/models/library.dart';
+import 'package:MyThirdEar/models/library.dart';
 import 'package:rxdart/rxdart.dart';
 
 // Try to load audio from a source and catch any errors.

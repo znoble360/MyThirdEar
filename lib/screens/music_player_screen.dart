@@ -1,15 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:musictranscriptiontools/cards/waveform.dart';
+import 'package:MyThirdEar/cards/waveform.dart';
 
-import 'package:musictranscriptiontools/plugins/app_review/app_review.dart';
-import 'package:musictranscriptiontools/screens/library.dart';
-import 'package:musictranscriptiontools/screens/player.dart';
-import 'package:musictranscriptiontools/ui/common/index.dart';
-import 'package:musictranscriptiontools/ui/common/piano_view.dart';
-import 'package:musictranscriptiontools/utils/common.dart';
-import 'package:musictranscriptiontools/utils/waveform.dart';
+import 'package:MyThirdEar/plugins/app_review/app_review.dart';
+import 'package:MyThirdEar/screens/library.dart';
+import 'package:MyThirdEar/screens/player.dart';
+import 'package:MyThirdEar/ui/common/index.dart';
+import 'package:MyThirdEar/ui/common/piano_view.dart';
+import 'package:MyThirdEar/utils/waveform.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   final MusicPlayer player;

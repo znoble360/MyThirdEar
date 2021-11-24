@@ -1,18 +1,16 @@
-import 'dart:io';
-
+import 'package:MyThirdEar/cards/pitch.dart';
+import 'package:MyThirdEar/cards/speed.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musictranscriptiontools/cards/pitch.dart';
-import 'package:musictranscriptiontools/cards/speed.dart';
-import 'package:musictranscriptiontools/models/library.dart';
+import 'package:MyThirdEar/models/library.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
-import 'package:musictranscriptiontools/utils/common.dart';
+import 'package:MyThirdEar/utils/common.dart';
 
 class MusicPlayer extends StatefulWidget {
   final AudioFile audioFile;

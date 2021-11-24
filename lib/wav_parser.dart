@@ -7,7 +7,6 @@ import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
 
 //final FlutterFFmpeg _flutterFFmpeg = new FlutterFFmpeg();
 
-
 //void main() {
 //  String fileName = '/home/znoble360/tones/soundfile.sapp.org_doc_WaveFormat.wav';
 //  File fp = File(fileName);
@@ -33,17 +32,14 @@ import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
 //
 //
 //
-//  
+//
 //}
-
-
 
 // TODO: add section to skip subchunks that aren't RIFF, fmt, or data subchunks
 
 // important variable to retrieve: waveform has all the audio data in a channel
 // by channel 2D-list
 class Wav {
-
   // Header variables
   int fileSize = -1;
   int subchunk1Size = -1;
@@ -59,13 +55,12 @@ class Wav {
 
   // wav byte data
   ByteData data;
-  
+
   num numFrames = -1;
 
   List<List<int>> waveform;
 
   Wav(File fp) {
-
     Uint8List wav = fp.readAsBytesSync();
 
     ByteData header = ByteData.sublistView(wav, 0, dataStart);
@@ -101,8 +96,7 @@ class Wav {
     audioFormat = header.getUint16(20, Endian.little);
     if (audioFormat == 1) {
       pcm = true;
-    }
-    else {
+    } else {
       pcm = false;
     }
 
@@ -130,13 +124,15 @@ class Wav {
     }
 
     if (String.fromCharCodes(temp) != 'data') {
-      print('warning: unexpected wav format "' + String.fromCharCodes(temp) + '"');
-      throw("Unexpected wav format");
+      print('warning: unexpected wav format "' +
+          String.fromCharCodes(temp) +
+          '"');
+      throw ("Unexpected wav format");
     }
 
     // SubChunk2Size
     dataSize = header.getUint32(40, Endian.little);
-    
+
     // numFrames
     numFrames = dataSize / (bitsPerSample * numChannels);
     numFrames = numFrames.round();
@@ -152,25 +148,25 @@ class Wav {
     // stores samples into waveform array
     for (int i = 0; i < numChannels; i++) {
       for (int j = 0; j < numFrames; j++) {
-        if (i+j*numChannels < intView.length) {
-          waveform[i].add(intView[i+j*numChannels]);
+        if (i + j * numChannels < intView.length) {
+          waveform[i].add(intView[i + j * numChannels]);
         }
       }
     }
   }
 
   // takes name of an audio file, writes the corresponding waveform bin to the outputFileName
-  static void wavToBin(String inputFileName, String outputFileName) {
-
-    String toBinCommand = "ffmpeg -y -i " + inputFileName + " -ar 44100 -ac 1 -map 0:a -c:a pcm_s16le -f data " + outputFileName;
+  static void wavToBin(String inputFileName, String outputFileName) async {
+    String toBinCommand = "ffmpeg -y -i " +
+        inputFileName +
+        " -ar 44100 -ac 1 -map 0:a -c:a pcm_s16le -f data " +
+        outputFileName;
 
     await FFmpegKit.executeAsync(toBinCommand);
-
   }
 
   // takes a filepointer to a bin waveform file and returns the wave data in a list
   static List<int> binToList(File fp) {
-
     Uint8List bin = fp.readAsBytesSync();
     Int16List temp = Int16List.view(bin.buffer);
     return temp.toList();
@@ -178,18 +174,17 @@ class Wav {
 
   void printHeader() {
     print('Header information:');
-    print('fileSize:\t'         + this.fileSize.toString());
-    print('subchunk1Size:\t'    + this.subchunk1Size.toString());
-    print('audioFormat:\t'      + this.audioFormat.toString());
-    print('pcm:\t\t'            + this.pcm.toString());
-    print('numChannels:\t'      + this.numChannels.toString());
-    print('sampleRate:\t'       + this.sampleRate.toString());
-    print('byteRate:\t'         + this.byteRate.toString());
-    print('bytesPerFrame:\t'    + this.bytesPerFrame.toString());
-    print('bitsPerSample:\t'    + this.bitsPerSample.toString());
-    print('dataSize:\t'         + this.dataSize.toString());
+    print('fileSize:\t' + this.fileSize.toString());
+    print('subchunk1Size:\t' + this.subchunk1Size.toString());
+    print('audioFormat:\t' + this.audioFormat.toString());
+    print('pcm:\t\t' + this.pcm.toString());
+    print('numChannels:\t' + this.numChannels.toString());
+    print('sampleRate:\t' + this.sampleRate.toString());
+    print('byteRate:\t' + this.byteRate.toString());
+    print('bytesPerFrame:\t' + this.bytesPerFrame.toString());
+    print('bitsPerSample:\t' + this.bitsPerSample.toString());
+    print('dataSize:\t' + this.dataSize.toString());
     print('');
-
   }
 
   void printData() {
@@ -200,7 +195,7 @@ class Wav {
     print('');
   }
 
-  _dataToList(Uint8List wav, int byteOffset, int sampleBitSize){
+  _dataToList(Uint8List wav, int byteOffset, int sampleBitSize) {
     switch (sampleBitSize) {
       case 8:
         return Uint8List.sublistView(wav, byteOffset);
