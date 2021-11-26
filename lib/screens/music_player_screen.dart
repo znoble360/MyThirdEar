@@ -77,7 +77,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
         children: [
           hideRTA
               ? SizedBox(
-              height: 160,
+              height: 200,
               child: StreamBuilder<String>(
                 stream: _player.audioFile.waveformFileController.stream,
                 builder:
@@ -91,15 +91,17 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                           config: waveformConfig,
                         );
                       }
-                      return CircularProgressIndicator(
-                          color: Colors.blueAccent);
+                      return Container(
+                      height: 10,
+                      child: CircularProgressIndicator(),
+                    );
                     },
                   );
                     },
                   ))
               : Container(height: 1),
           Container(
-            height: 300,
+            height: 220,
             child: _player,
           ),
           Align(
@@ -137,8 +139,8 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     ),
                   ],
                 )
-              : Container(
-                  height: 310,
+              : Flexible(
+                flex: 1,
                   child: SingleChildScrollView(
                     reverse: true,
                     child: Image.asset(
@@ -148,9 +150,9 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     ),
                   ),
                 ),
-          SizedBox(height: hideRTA ? 70 : 0),
           hideRTA
-              ? Flexible(
+              ? Container(
+                  height: 150,
                   child: PianoView(
                     keyWidth: (80 * (0.5)),
                     showLabels: true,
