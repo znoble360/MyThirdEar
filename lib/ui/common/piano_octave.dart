@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:musictranscriptiontools/ui/common/piano_key.dart';
+import 'package:MyThirdEar/ui/common/piano_key.dart';
 
 class PianoOctave extends StatelessWidget {
   const PianoOctave({

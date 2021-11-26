@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:musictranscriptiontools/ui/home/theme.dart';
+import 'package:MyThirdEar/ui/home/theme.dart';
 
-import 'package:musictranscriptiontools/ui/common/piano_octave.dart';
-import 'package:musictranscriptiontools/ui/common/piano_section.dart';
-import 'package:musictranscriptiontools/ui/common/piano_slider.dart';
+import 'package:MyThirdEar/ui/common/piano_section.dart';
+import 'package:MyThirdEar/ui/common/piano_slider.dart';
 
 class PianoView extends StatefulWidget {
   const PianoView({

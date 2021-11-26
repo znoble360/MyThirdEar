@@ -1,8 +1,8 @@
-# musictranscriptiontools
+# MyThirdEar
 
 ### App Description
 
-Music Transcription Tools is a mobile application with the objective of helping musicians transcribe music by providing some analysis tools to be used on an audio sample.
+MyThirdEar is a mobile application with the objective of helping musicians transcribe music by providing some analysis tools to be used on an audio sample.
 
 ### Main Features
 
@@ -32,7 +32,7 @@ Follow the iOS development instructions in the Flutter docs [here](https://flutt
 
 ##### Switch into the ios folder and run pod install to get necessary dependencies
 
-cd musictranscriptiontools/ios
+cd MyThirdEar/ios
 pod install
 
 ##### Start the iOS simulator
@@ -54,16 +54,16 @@ Follow the android development instructions to download and set up android studi
 
 Make sure you have your ssh keys set up with GitHub, instructions [here](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh).
 
-    git clone git@github.com:znoble360/musictranscriptiontools.git
+    git clone git@github.com:znoble360/MyThirdEar.git
 
 ### Find an issue to work on
 
-We have a list of issues available [here](https://github.com/znoble360/musictranscriptiontools/issues) that you can choose from.
+We have a list of issues available [here](https://github.com/znoble360/MyThirdEar/issues) that you can choose from.
 
 **Make sure to:**
 
 1. Assign the issue to yourself.
-2. We use GitHub's PM tool "Projects" to track our progress. Drag the card corresponding to the issue into the "In Progress" column [here](https://github.com/znoble360/musictranscriptiontools/projects/1).
+2. We use GitHub's PM tool "Projects" to track our progress. Drag the card corresponding to the issue into the "In Progress" column [here](https://github.com/znoble360/MyThirdEar/projects/1).
 3. Most of these don't have a description, so please add one once you have a plan for development.
 
 ### Creating a branch
