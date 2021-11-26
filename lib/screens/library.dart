@@ -155,49 +155,24 @@ class _LibraryState extends State<Library> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: () async {
-        //     if (await uploadAudioFile() == false) return showMyDialog(context);
-        //   },
-        //   child: const Icon(Icons.file_upload),
-        //   backgroundColor: Colors.blue,
-        // ),
-        body: Stack(
-          children: [
-            CustomScrollView(
+        floatingActionButton: FloatingActionButton.extended(
+          label: Text(
+            "Upload Audio File",
+            style: TextStyle(color: Colors.black),
+          ),
+          onPressed: () async {
+            if (await uploadAudioFile() == false) return showMyDialog(context);
+          },
+          icon: const Icon(Icons.file_upload, color: Colors.black),
+          backgroundColor: Color(0xFFCAE0EC),
+        ),
+        body: CustomScrollView(
               slivers: [
                 _MyAppBar(),
                 const SliverToBoxAdapter(child: SizedBox(height: 20)),
                 getContentView()
               ],
             ),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: GestureDetector(
-                  onTap: () async {
-                    if (await uploadAudioFile() == false)
-                      return showMyDialog(context);
-                  },
-                  child: Container(
-                    width: 150,
-                    height: 50,
-                    margin: EdgeInsets.only(bottom: 50, right: 15),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(15)),
-                        border: Border.all(color: Colors.blue, width: 1)),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Upload New File'),
-                        SizedBox(width: 5),
-                        Icon(Icons.file_upload, color: Colors.blue)
-                      ],
-                    ),
-                  )),
-            )
-          ],
-        ),
         drawer: Drawer(
             child: ListView(
           children: <Widget>[
