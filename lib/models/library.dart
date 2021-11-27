@@ -24,8 +24,10 @@ class AudioFile {
   final String author;
   final String filepath;
   final String waveformBinPath;
+  final String spectrogramPath;
+  final String predictionPath;
   final BehaviorSubject<String> waveformFileController;
 
   AudioFile(this.name, this.author, this.filepath, this.waveformFileController,
-      this.waveformBinPath);
+      this.waveformBinPath, this.spectrogramPath, this.predictionPath);
 }

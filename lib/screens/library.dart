@@ -30,7 +30,9 @@ class _LibraryState extends State<Library> {
         name: audioFile.name,
         author: audioFile.author,
         filepath: audioFile.filepath,
-        waveformBinPath: audioFile.waveformBinPath);
+        waveformBinPath: audioFile.waveformBinPath,
+        spectrogramPath: audioFile.spectrogramPath,
+        predictionPath: audioFile.predictionPath);
     box.add(newAudioFileData);
     print('newAudioFileData added to box!');
   }
@@ -154,6 +156,14 @@ class _LibraryState extends State<Library> {
               },
             ),
             ListTile(
+                leading: Icon(Icons.delete),
+                title: Text("Delete All Songs"),
+                onTap: () async {
+                  if (_appDocDir.existsSync()) {
+                    _appDocDir.deleteSync(recursive: true);
+                  }
+                }),
+            ListTile(
               leading: Icon(Icons.settings),
               title: Text("Settings"),
             ),
@@ -250,7 +260,8 @@ class _MyListItemState extends State<_MyListItem> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: new Text("Are you sure you want to delete this file?"),
-          content: new Text("This will delete all metadata and the related files from the file system."),
+          content: new Text(
+              "This will delete all metadata and the related files from the file system."),
           actions: <Widget>[
             new TextButton(
               child: new Text("Confirm Delete"),

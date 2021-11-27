@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:MyThirdEar/cards/rta.dart';
 import 'package:flutter/material.dart';
 import 'package:MyThirdEar/cards/waveform.dart';
 
@@ -68,27 +69,29 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          SizedBox(
-              height: 160,
-              child: StreamBuilder<String>(
-                stream: _player.audioFile.waveformFileController.stream,
-                builder:
-                    (BuildContext __context, AsyncSnapshot<String> __snapshot) {
-                  return FutureBuilder<WaveformData>(
-                    future: loadWaveformData(__snapshot.data!),
-                    builder: (context, AsyncSnapshot<WaveformData> snapshot) {
-                      if (snapshot.hasData) {
-                        return PaintedWaveform(
+          StreamBuilder<String>(
+            stream: _player.audioFile.waveformFileController.stream,
+            builder:
+                (BuildContext __context, AsyncSnapshot<String> __snapshot) {
+              return Column(children: [
+                FutureBuilder<WaveformData>(
+                  future: loadWaveformData(__snapshot.data!),
+                  builder: (context, AsyncSnapshot<WaveformData> snapshot) {
+                    if (snapshot.hasData) {
+                      return SizedBox(
+                        height: 170,
+                        child: PaintedWaveform(
                           sampleData: snapshot.data,
                           positionDataStream: _player.positionDataStream,
-                        );
-                      }
-                      return CircularProgressIndicator(
-                          color: Colors.blueAccent);
-                    },
-                  );
-                },
-              )),
+                        ),
+                      );
+                    }
+                    return CircularProgressIndicator(color: Colors.blueAccent);
+                  },
+                ),
+              ]);
+            },
+          ),
           Container(
             height: 280,
             child: _player,
@@ -127,7 +130,13 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
               ),
             ],
           ),
-          SizedBox(height: 70),
+          SizedBox(
+            height: 70,
+            child: RTACard(_player.audioFile.predictionPath,
+                positionDataStream: _player.positionDataStream,
+                height: 70,
+                width: MediaQuery.of(context).size.width),
+          ),
           hideRTA
               ? Flexible(
                   child: PianoView(
@@ -138,7 +147,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
                     feedback: false,
                   ),
                 )
-              : SizedBox(height: 0)
+              : SizedBox(height: 0),
         ],
       ),
     );

@@ -21,13 +21,15 @@ class AudioFileDataAdapter extends TypeAdapter<AudioFileData> {
       author: fields[1] as String,
       filepath: fields[2] as String,
       waveformBinPath: fields[3] as String,
+      spectrogramPath: fields[4] as String,
+      predictionPath: fields[5] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, AudioFileData obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -35,7 +37,11 @@ class AudioFileDataAdapter extends TypeAdapter<AudioFileData> {
       ..writeByte(2)
       ..write(obj.filepath)
       ..writeByte(3)
-      ..write(obj.waveformBinPath);
+      ..write(obj.waveformBinPath)
+      ..writeByte(4)
+      ..write(obj.spectrogramPath)
+      ..writeByte(5)
+      ..write(obj.predictionPath);
   }
 
   @override
