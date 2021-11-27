@@ -395,7 +395,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                                       ),
                                     ]
                                 )
-
+                            )
                         ),
                       if (loopingMode == "start")
                         Container(
