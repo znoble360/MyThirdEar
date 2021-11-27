@@ -17,6 +17,7 @@ class MusicPlayer extends StatefulWidget {
   final AudioFile audioFile;
   MusicPlayerScreenState musicPlayerScreenState;
   MusicPlayer({required this.audioFile, required this.musicPlayerScreenState});
+  var callback;
 
   @override
   _MusicPlayerPlayState createState() => _MusicPlayerPlayState();
@@ -27,6 +28,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
   late AudioPlayer _player;
   var _audioFile;
   var _appDocDir;
+  var _callback;
   var loopingMode;
   late Duration loopingStart;
   late Duration loopingEnd;
@@ -43,6 +45,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     _audioFile = widget.audioFile;
     loopingMode = "off";
     loopingError = false;
+    _callback = pauseAudioOnExit;
 
     widget.musicPlayerScreenState.waveformConfig.positionDataStream =
         Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
@@ -60,6 +63,8 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     _appDocDir = await getApplicationDocumentsDirectory();
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
+
+    widget.callback = _callback;
 
     try {
       String applicationDirectory = _audioFile.filepath;
@@ -91,6 +96,10 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     if (state == AppLifecycleState.paused) {
       _player.stop();
     }
+  }
+
+  void pauseAudioOnExit() {
+    _player.pause();
   }
 
   void setStartLoop() {
@@ -156,7 +165,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
               title: const Text('Invalid Loop'),
               content: SingleChildScrollView(
                 child: Text(
-                        'Please make sure the end of the loop is after the start of the loop, [loop start: $loopingStart].'),
+                    'Please make sure the end of the loop is after the start of the loop, [loop start: $loopingStart].'),
               ),
               actions: <Widget>[
                 TextButton(
@@ -172,59 +181,58 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-              body: Container(
-                  child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              StreamBuilder<PositionData>(
-                stream: widget
-                    .musicPlayerScreenState.waveformConfig.positionDataStream,
-                builder: (context, snapshot) {
-                  final positionData = snapshot.data;
-                  return SeekBar(
-                    duration: positionData?.duration ?? Duration.zero,
-                    position: positionData?.position ?? Duration.zero,
-                    bufferedPosition:
-                        positionData?.bufferedPosition ?? Duration.zero,
-                    onChangeEnd: (newPosition) {
-                      _player.seek(newPosition);
-                    },
-                  );
-                },
-              ),
-              if (loopingMode == "off")
-                Container(
-                    child: Align(
-                  alignment: Alignment.center,
-                  child: TextButton.icon(
-                      onPressed: () => setStartLoop(),
-                      icon: Icon(Icons.loop_outlined),
-                      label: Text("Start Loop")),
-                )),
-              if (loopingMode == "start")
-                Container(
-                    child: Align(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+                body: Container(
+                    child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    StreamBuilder<PositionData>(
+                      stream: widget.musicPlayerScreenState.waveformConfig
+                          .positionDataStream,
+                      builder: (context, snapshot) {
+                        final positionData = snapshot.data;
+                        return SeekBar(
+                          duration: positionData?.duration ?? Duration.zero,
+                          position: positionData?.position ?? Duration.zero,
+                          bufferedPosition:
+                              positionData?.bufferedPosition ?? Duration.zero,
+                          onChangeEnd: (newPosition) {
+                            _player.seek(newPosition);
+                          },
+                        );
+                      },
+                    ),
+                    if (loopingMode == "off")
+                      Container(
+                          child: Align(
                         alignment: Alignment.center,
                         child: TextButton.icon(
-                            onPressed: () => setEndLoop(),
+                            onPressed: () => setStartLoop(),
                             icon: Icon(Icons.loop_outlined),
-                            label: Text("End Loop")))),
-              if (loopingMode == "looping")
-                Container(
-                    child: Align(
-                        alignment: Alignment.center,
-                        child: TextButton.icon(
-                            onPressed: () => clearLoop(),
-                            icon: Icon(Icons.cancel_outlined),
-                            label: Text("Clear Loop")))),
-              ControlButtons(_player),
-            ],
-          )),
-      ),
-    );
+                            label: Text("Start Loop")),
+                      )),
+                    if (loopingMode == "start")
+                      Container(
+                          child: Align(
+                              alignment: Alignment.center,
+                              child: TextButton.icon(
+                                  onPressed: () => setEndLoop(),
+                                  icon: Icon(Icons.loop_outlined),
+                                  label: Text("End Loop")))),
+                    if (loopingMode == "looping")
+                      Container(
+                          child: Align(
+                              alignment: Alignment.center,
+                              child: TextButton.icon(
+                                  onPressed: () => clearLoop(),
+                                  icon: Icon(Icons.cancel_outlined),
+                                  label: Text("Clear Loop")))),
+                    ControlButtons(_player),
+                  ],
+                )),
+        ));
   }
 }
 
