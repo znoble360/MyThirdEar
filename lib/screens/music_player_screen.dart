@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:MyThirdEar/cards/rta.dart';
 import 'package:MyThirdEar/models/library.dart';
@@ -104,22 +105,6 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
             height: 220,
             child: _player,
           ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Hide Spectrogram'),
-                Checkbox(
-                    value: hideRTA,
-                    onChanged: (value) {
-                      setState(() {
-                        hideRTA = value!;
-                      });
-                    })
-              ],
-            ),
-          ),
           Row(
             mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -130,51 +115,44 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                   Text(hideRTA ? 'Cmaj7' : ''),
                 ],
               ),
-              Column(
+              Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(hideRTA ? 'Estimated BPM' : ''),
-                  Text(hideRTA ? '117' : ''),
+                  Text('Hide Spectrogram'),
+                  Checkbox(
+                      value: hideRTA,
+                      onChanged: (value) {
+                        setState(() {
+                          hideRTA = value!;
+                        });
+                      }),
                 ],
               ),
             ],
           ),
-          SizedBox(
-            height: 70,
-            child: RTACard(_player.audioFile.predictionPath,
-                waveformConfig: waveformConfig,
-                height: 70,
-                width: MediaQuery.of(context).size.width),
-          ),
           hideRTA
-              ? Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      children: [
-                        Text('Estimated Chord'),
-                        Text('Cmaj7'),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text('Estimated BPM'),
-                        Text('117'),
-                      ],
-                    ),
-                  ],
+              ? SizedBox(
+                  height: 70,
+                  child: RTACard(_player.audioFile.predictionPath,
+                      waveformConfig: waveformConfig,
+                      height: 70,
+                      width: MediaQuery.of(context).size.width),
                 )
-              : Flexible(
+              : SizedBox(),
+          !hideRTA
+              ? Flexible(
                   flex: 1,
                   child: SingleChildScrollView(
                     reverse: true,
-                    child: Image.asset(
-                      'assets/images/demo.jpg',
+                    child: Image.file(
+                      new File(_player.audioFile.spectrogramPath),
                       height: 500,
+                      width: MediaQuery.of(context).size.width,
                       fit: BoxFit.fill,
                     ),
                   ),
-                ),
+                )
+              : SizedBox(),
           hideRTA
               ? Container(
                   height: 150,
