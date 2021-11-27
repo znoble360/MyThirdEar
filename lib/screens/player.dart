@@ -174,9 +174,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: SafeArea(
-          child: SingleChildScrollView(
-              child: Container(
+              body: Container(
                   child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -224,8 +222,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                             label: Text("Clear Loop")))),
               ControlButtons(_player),
             ],
-          ))),
-        ),
+          )),
       ),
     );
   }
@@ -292,7 +289,7 @@ class ControlButtons extends StatelessWidget {
                   if (processingState == ProcessingState.loading ||
                       processingState == ProcessingState.buffering) {
                     return Container(
-                      height: 47,
+                      height: 40,
                       child: CircularProgressIndicator(),
                     );
                   } else if (playing != true) {

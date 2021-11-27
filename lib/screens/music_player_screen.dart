@@ -73,31 +73,35 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
       )),
       body: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(
-              height: 160,
-              child: StreamBuilder<String>(
-                stream: _player.audioFile.waveformFileController.stream,
-                builder:
-                    (BuildContext __context, AsyncSnapshot<String> __snapshot) {
-                  return FutureBuilder<WaveformData>(
-                    future: loadWaveformData(__snapshot.data!),
-                    builder: (context, AsyncSnapshot<WaveformData> snapshot) {
-                      if (snapshot.hasData) {
-                        return PaintedWaveform(
-                          sampleData: snapshot.data!,
-                          config: waveformConfig,
+          StreamBuilder<String>(
+            stream: _player.audioFile.waveformFileController.stream,
+            builder:
+                (BuildContext __context, AsyncSnapshot<String> __snapshot) {
+              if (hideRTA)
+                return SizedBox(
+                    height: 200,
+                    child: FutureBuilder<WaveformData>(
+                      future: loadWaveformData(__snapshot.data!),
+                      builder: (context, AsyncSnapshot<WaveformData> snapshot) {
+                        if (snapshot.hasData) {
+                          return PaintedWaveform(
+                            sampleData: snapshot.data!,
+                            config: waveformConfig,
+                          );
+                        }
+                        return Container(
+                          height: 10,
+                          child: CircularProgressIndicator(),
                         );
-                      }
-                      return CircularProgressIndicator(
-                          color: Colors.blueAccent);
-                    },
-                  );
-                },
-              )),
+                      },
+                    ));
+              return SizedBox();
+            },
+          ),
           Container(
-            height: 280,
+            height: 220,
             child: _player,
           ),
           Align(
@@ -142,7 +146,38 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                 width: MediaQuery.of(context).size.width),
           ),
           hideRTA
-              ? Flexible(
+              ? Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      children: [
+                        Text('Estimated Chord'),
+                        Text('Cmaj7'),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text('Estimated BPM'),
+                        Text('117'),
+                      ],
+                    ),
+                  ],
+                )
+              : Flexible(
+                  flex: 1,
+                  child: SingleChildScrollView(
+                    reverse: true,
+                    child: Image.asset(
+                      'assets/images/demo.jpg',
+                      height: 500,
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+          hideRTA
+              ? Container(
+                  height: 150,
                   child: PianoView(
                     keyWidth: (80 * (0.5)),
                     showLabels: true,
@@ -151,7 +186,13 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     feedback: false,
                   ),
                 )
-              : SizedBox(height: 0),
+              : Container(
+                  height: 82,
+                  child: Image.asset(
+                    'assets/images/piano.png',
+                    fit: BoxFit.fill,
+                  ),
+                )
         ],
       ),
     );

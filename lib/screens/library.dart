@@ -128,6 +128,38 @@ class _LibraryState extends State<Library> {
             ));
   }
 
+  getContentView() {
+    if (box.length == 0) {
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+            (context, index) => Center(
+                  child: Column(
+                    children: [
+                      SizedBox(height: 100),
+                      Icon(
+                        Icons.music_note,
+                        color: Colors.black,
+                        size: 60,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'No audio files yet...',
+                        style: TextStyle(fontSize: 25),
+                      )
+                    ],
+                  ),
+                ),
+            childCount: 1),
+      );
+    } else {
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+            (context, index) => _MyListItem(index, box, removeAudioFile),
+            childCount: box.length),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,35 +175,30 @@ class _LibraryState extends State<Library> {
           backgroundColor: Color(0xFFCAE0EC),
         ),
         body: CustomScrollView(
-          slivers: [
-            _MyAppBar(),
-            // My Library header
-            SliverAppBar(
-              automaticallyImplyLeading: false,
-              flexibleSpace: FlexibleSpaceBar(
-                title: Text(
-                  "My Library",
-                  style: TextStyle(color: Colors.black, fontSize: 23),
+              slivers: [
+                _MyAppBar(),
+                SliverAppBar(
+                  automaticallyImplyLeading: false,
+                  flexibleSpace: FlexibleSpaceBar(
+                    title: Text(
+                      "My Library",
+                      style: TextStyle(color: Colors.black, fontSize: 23),
+                    ),
+                    titlePadding: EdgeInsets.only(right: 220, bottom: 10),
+                  ),
+                  backgroundColor: Colors.transparent,
+                  pinned: true,
                 ),
-                titlePadding: EdgeInsets.only(right: 220, bottom: 10),
-              ),
-              backgroundColor: Colors.transparent,
-              pinned: true,
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                  (context, index) => _MyListItem(index, box, removeAudioFile),
-                  childCount: box.length),
-            ),
-          ],
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                getContentView()
+              ],
         ),
         drawer: Drawer(
             child: ListView(
           children: <Widget>[
             Container(height: 20.0),
             ListTile(
-              leading: Icon(Icons.file_upload),
+              leading: Icon(Icons.file_upload, color: Colors.blue),
               title: Text("Upload New Audio File"),
               onTap: () async {
                 if (await uploadAudioFile() == false)
