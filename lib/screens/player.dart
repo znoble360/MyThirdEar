@@ -1,23 +1,22 @@
-import 'dart:io';
-
+import 'package:MyThirdEar/cards/pitch.dart';
+import 'package:MyThirdEar/cards/speed.dart';
+import 'package:MyThirdEar/screens/music_player_screen.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musictranscriptiontools/cards/pitch.dart';
-import 'package:musictranscriptiontools/cards/speed.dart';
-import 'package:musictranscriptiontools/models/library.dart';
+import 'package:MyThirdEar/models/library.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
-import 'package:musictranscriptiontools/utils/common.dart';
+import 'package:MyThirdEar/utils/common.dart';
 
 class MusicPlayer extends StatefulWidget {
   final AudioFile audioFile;
-  late Stream<PositionData> positionDataStream;
-  MusicPlayer({required this.audioFile});
+  MusicPlayerScreenState musicPlayerScreenState;
+  MusicPlayer({required this.audioFile, required this.musicPlayerScreenState});
 
   @override
   _MusicPlayerPlayState createState() => _MusicPlayerPlayState();
@@ -29,8 +28,8 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
   var _audioFile;
   var _appDocDir;
   var loopingMode;
-  var loopingStart;
-  var loopingEnd;
+  late Duration loopingStart;
+  late Duration loopingEnd;
   var loopingError;
 
   @override
@@ -45,7 +44,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     loopingMode = "off";
     loopingError = false;
 
-    widget.positionDataStream =
+    widget.musicPlayerScreenState.waveformConfig.positionDataStream =
         Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
                 _player.positionStream.asBroadcastStream(),
                 _player.bufferedPositionStream.asBroadcastStream(),
@@ -112,6 +111,13 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
       loopingEnd = _player.position;
     });
 
+    widget.musicPlayerScreenState.setState(() {
+      widget.musicPlayerScreenState.waveformConfig.startPercentage =
+          loopingStart.inMilliseconds / _player.duration!.inMilliseconds;
+      widget.musicPlayerScreenState.waveformConfig.endPercentage =
+          loopingEnd.inMilliseconds / _player.duration!.inMilliseconds;
+    });
+
     await _player.setClip(start: loopingStart, end: loopingEnd);
     await _player.setLoopMode(LoopMode.one);
   }
@@ -128,6 +134,19 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
       _player.setFilePath(audioFilePath);
       loopingMode = "off";
     });
+
+    widget.musicPlayerScreenState.setState(() {
+      widget.musicPlayerScreenState.waveformConfig.positionDataStream =
+          Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
+                  _player.positionStream.asBroadcastStream(),
+                  _player.bufferedPositionStream.asBroadcastStream(),
+                  _player.durationStream.asBroadcastStream(),
+                  (position, bufferedPosition, duration) => PositionData(
+                      position, bufferedPosition, duration ?? Duration.zero))
+              .asBroadcastStream();
+
+      widget.musicPlayerScreenState.waveformConfig.setToDefault();
+    });
   }
 
   @override
@@ -143,7 +162,8 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               StreamBuilder<PositionData>(
-                stream: widget.positionDataStream,
+                stream: widget
+                    .musicPlayerScreenState.waveformConfig.positionDataStream,
                 builder: (context, snapshot) {
                   final positionData = snapshot.data;
                   return SeekBar(

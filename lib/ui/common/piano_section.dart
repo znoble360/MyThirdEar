@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'package:musictranscriptiontools/plugins/midi/midi.dart';
-import 'package:musictranscriptiontools/plugins/vibrate/vibrate.dart';
-import 'package:musictranscriptiontools/ui/common/piano_octave.dart';
+import 'package:MyThirdEar/plugins/midi/midi.dart';
+import 'package:MyThirdEar/plugins/vibrate/vibrate.dart';
+import 'package:MyThirdEar/ui/common/piano_octave.dart';
 
 const double _kDefaultKeyWidth = 40 + (80 * (0.5));
 const String kDefaultSoundFontPath = 'assets/sounds/Piano.sf2';

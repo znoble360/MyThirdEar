@@ -1,3 +1,3 @@
-export 'package:musictranscriptiontools/ui/common/piano_section.dart';
-export 'package:musictranscriptiontools/plugins/midi/midi.dart';
-export 'package:musictranscriptiontools/ui/home/theme.dart';
+export 'package:MyThirdEar/ui/common/piano_section.dart';
+export 'package:MyThirdEar/plugins/midi/midi.dart';
+export 'package:MyThirdEar/ui/home/theme.dart';

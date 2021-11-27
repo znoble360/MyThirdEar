@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:musictranscriptiontools/models/library.dart';
+import 'package:MyThirdEar/models/library.dart';
 
 class MusicPlayerModel extends ChangeNotifier {
   /// The private field backing [catalog].
