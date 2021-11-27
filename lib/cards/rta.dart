@@ -59,7 +59,7 @@ class _RTACardState extends State<RTACard> {
     double percent = positionData.position.inMilliseconds /
         positionData.duration.inMilliseconds;
 
-    return (widget.data.length * percent).floor();
+    return ((widget.data.length - 1) * percent).floor();
   }
 }
 
