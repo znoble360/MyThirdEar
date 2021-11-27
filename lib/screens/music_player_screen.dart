@@ -75,31 +75,32 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          hideRTA
-              ? SizedBox(
-              height: 200,
-              child: StreamBuilder<String>(
-                stream: _player.audioFile.waveformFileController.stream,
-                builder:
-                    (BuildContext __context, AsyncSnapshot<String> __snapshot) {
-                  return FutureBuilder<WaveformData>(
-                    future: loadWaveformData(__snapshot.data!),
-                    builder: (context, AsyncSnapshot<WaveformData> snapshot) {
-                      if (snapshot.hasData) {
-                        return PaintedWaveform(
-                          sampleData: snapshot.data!,
-                          config: waveformConfig,
-                        );
-                      }
-                      return Container(
-                      height: 10,
-                      child: CircularProgressIndicator(),
-                    );
+          StreamBuilder<String>(
+                    stream: _player.audioFile.waveformFileController.stream,
+                    builder: (BuildContext __context,
+                        AsyncSnapshot<String> __snapshot) {
+                      if (hideRTA)
+                        return SizedBox(
+                        height: 200,
+                        child: FutureBuilder<WaveformData>(
+                          future: loadWaveformData(__snapshot.data!),
+                          builder:
+                              (context, AsyncSnapshot<WaveformData> snapshot) {
+                            if (snapshot.hasData) {
+                              return PaintedWaveform(
+                                sampleData: snapshot.data!,
+                                config: waveformConfig,
+                              );
+                            }
+                            return Container(
+                              height: 10,
+                              child: CircularProgressIndicator(),
+                            );
+                          },
+                        ));
+                      return SizedBox();
                     },
-                  );
-                    },
-                  ))
-              : Container(height: 1),
+                  ),
           Container(
             height: 220,
             child: _player,
@@ -140,7 +141,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                   ],
                 )
               : Flexible(
-                flex: 1,
+                  flex: 1,
                   child: SingleChildScrollView(
                     reverse: true,
                     child: Image.asset(
