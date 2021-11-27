@@ -395,12 +395,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                                       ),
                                     ]
                                 )
-                            // child: TextButton.icon(
-                            //     onPressed: () => setStartLoop(),
-                            //     icon: Icon(Icons.loop_outlined),
-                            //     label: Text("Start Loop")
-                            // ),
-                            )
+
                         ),
                       if (loopingMode == "start")
                         Container(
@@ -459,14 +454,6 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                                 )
                             )
                         ),
-                      // if (loopingMode == "looping")
-                      //   Container(
-                      //       child: Align(
-                      //           alignment: Alignment.center,
-                      //           child: TextButton.icon(
-                      //               onPressed: () => clearLoop(),
-                      //               icon: Icon(Icons.cancel_outlined),
-                      //               label: Text("Clear Loop")))),
                       ControlButtons(_player),
                     ],
                   )
