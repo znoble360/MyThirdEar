@@ -20,7 +20,7 @@ class PianoSlider extends StatelessWidget {
       children: <Widget>[
         Container(
           color: Theme.of(context).backgroundColor,
-          padding: EdgeInsets.only(bottom: 8.0),
+          padding: EdgeInsets.only(bottom: 5.0),
           child: Row(
             children: <Widget>[
               _buildSection(context, 0),
@@ -59,7 +59,7 @@ class PianoSlider extends StatelessWidget {
           Positioned(
               left: 0.0,
               right: 0.0,
-              bottom: 15.0,
+              bottom: 5.0,
               top: 0.0,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -1,4 +1,4 @@
-package com.package.MyThirdEar
+package com.MyThirdEar
 
 import io.flutter.embedding.android.FlutterActivity
 
