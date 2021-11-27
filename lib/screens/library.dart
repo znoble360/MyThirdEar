@@ -58,14 +58,20 @@ class _LibraryState extends State<Library> {
   Future<bool> uploadAudioFile() async {
     AudioFile? file = await selectFileForPlayer(_appDocDir);
     if (file != null) {
+      //user canceled upload file action
+      if (file.name == "" && file.author == "") return true;
+
+      // user selected a file
       var library = context.read<LibraryModel>();
       library.addAudioFile(file);
       _addAudioFileToHive(file);
       setState(() {});
+
       // If we got a new file return true
       return true;
     }
     setState(() {});
+    
     // if it's a duplicate file, return false and show the dialog box
     return false;
   }
@@ -169,10 +175,22 @@ class _LibraryState extends State<Library> {
         body: CustomScrollView(
               slivers: [
                 _MyAppBar(),
+                SliverAppBar(
+                  automaticallyImplyLeading: false,
+                  flexibleSpace: FlexibleSpaceBar(
+                    title: Text(
+                      "My Library",
+                      style: TextStyle(color: Colors.black, fontSize: 23),
+                    ),
+                    titlePadding: EdgeInsets.only(right: 220, bottom: 10),
+                  ),
+                  backgroundColor: Colors.transparent,
+                  pinned: true,
+                ),
                 const SliverToBoxAdapter(child: SizedBox(height: 20)),
                 getContentView()
               ],
-            ),
+        ),
         drawer: Drawer(
             child: ListView(
           children: <Widget>[
@@ -198,12 +216,10 @@ class _MyAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      iconTheme: IconThemeData(color: Colors.blueGrey),
-      backgroundColor: Colors.transparent,
+      iconTheme: IconThemeData(color: Colors.white),
       title: Text(
         'MyThirdEar',
         style: TextStyle(
-          color: Colors.black,
           fontSize: 25,
         ),
       ),
@@ -253,7 +269,7 @@ class _MyListItemState extends State<_MyListItem> {
           padding: const EdgeInsets.only(right: 15, left: 15, bottom: 10),
           height: 90,
           child: Card(
-              color: Color(0xFFBBDEFB),
+              color: Color(0xFFCAE0EC),
               elevation: 2,
               shape: RoundedRectangleBorder(
                   side: BorderSide(color: Colors.black, width: 0.5),
