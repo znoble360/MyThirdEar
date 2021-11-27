@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:MyThirdEar/cards/rta.dart';
+import 'package:MyThirdEar/models/library.dart';
+import 'package:MyThirdEar/models/waveformConfig.dart';
+import 'package:MyThirdEar/utils/common.dart';
 import 'package:flutter/material.dart';
 import 'package:MyThirdEar/cards/waveform.dart';
 
@@ -12,19 +15,20 @@ import 'package:MyThirdEar/ui/common/piano_view.dart';
 import 'package:MyThirdEar/utils/waveform.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
-  final MusicPlayer player;
+  final AudioFile audioFile;
 
-  MusicPlayerScreen({required this.player});
+  MusicPlayerScreen({required this.audioFile});
 
   @override
-  _MusicPlayerScreenState createState() => _MusicPlayerScreenState();
+  MusicPlayerScreenState createState() => MusicPlayerScreenState();
 }
 
-class _MusicPlayerScreenState extends State<MusicPlayerScreen>
+class MusicPlayerScreenState extends State<MusicPlayerScreen>
     with WidgetsBindingObserver {
   bool canVibrate = false;
   bool hideRTA = true;
   late MusicPlayer _player;
+  WaveformConfig waveformConfig = WaveformConfig();
 
   @override
   void initState() {
@@ -32,7 +36,10 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
     Future.delayed(Duration(seconds: 60)).then((_) {
       if (mounted) ReviewUtils.requestReview();
     });
-    _player = widget.player;
+    _player = MusicPlayer(
+      audioFile: widget.audioFile,
+      musicPlayerScreenState: this,
+    );
   }
 
   @override
@@ -56,12 +63,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
         ]),
       )),
       appBar: (AppBar(
+        backgroundColor: Colors.blue,
         title: Text(
           'MyThirdEar',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Indies',
-            fontSize: 25.0,
+            fontSize: 25,
           ),
         ),
       )),
@@ -69,29 +75,27 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          StreamBuilder<String>(
-            stream: _player.audioFile.waveformFileController.stream,
-            builder:
-                (BuildContext __context, AsyncSnapshot<String> __snapshot) {
-              return Column(children: [
-                FutureBuilder<WaveformData>(
-                  future: loadWaveformData(__snapshot.data!),
-                  builder: (context, AsyncSnapshot<WaveformData> snapshot) {
-                    if (snapshot.hasData) {
-                      return SizedBox(
-                        height: 170,
-                        child: PaintedWaveform(
-                          sampleData: snapshot.data,
-                          positionDataStream: _player.positionDataStream,
-                        ),
-                      );
-                    }
-                    return CircularProgressIndicator(color: Colors.blueAccent);
-                  },
-                ),
-              ]);
-            },
-          ),
+          SizedBox(
+              height: 160,
+              child: StreamBuilder<String>(
+                stream: _player.audioFile.waveformFileController.stream,
+                builder:
+                    (BuildContext __context, AsyncSnapshot<String> __snapshot) {
+                  return FutureBuilder<WaveformData>(
+                    future: loadWaveformData(__snapshot.data!),
+                    builder: (context, AsyncSnapshot<WaveformData> snapshot) {
+                      if (snapshot.hasData) {
+                        return PaintedWaveform(
+                          sampleData: snapshot.data!,
+                          config: waveformConfig,
+                        );
+                      }
+                      return CircularProgressIndicator(
+                          color: Colors.blueAccent);
+                    },
+                  );
+                },
+              )),
           Container(
             height: 280,
             child: _player,
@@ -133,7 +137,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen>
           SizedBox(
             height: 70,
             child: RTACard(_player.audioFile.predictionPath,
-                positionDataStream: _player.positionDataStream,
+                waveformConfig: waveformConfig,
                 height: 70,
                 width: MediaQuery.of(context).size.width),
           ),

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:MyThirdEar/models/waveformConfig.dart';
 import 'package:MyThirdEar/utils/common.dart';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +10,11 @@ class RTACard extends StatefulWidget {
   double height;
   double width;
   int NUMBER_OF_KEYS = 84;
-  Stream<PositionData> positionDataStream;
+  WaveformConfig waveformConfig;
   late Map<int, List<dynamic>> data;
 
   RTACard(String file,
-      {required this.positionDataStream,
+      {required this.waveformConfig,
       required this.height,
       required this.width}) {
     data = parseCSV(file);
@@ -38,7 +39,7 @@ class _RTACardState extends State<RTACard> {
       height: widget.height,
       width: widget.width,
       child: StreamBuilder<PositionData>(
-        stream: widget.positionDataStream,
+        stream: widget.waveformConfig.positionDataStream,
         builder: (BuildContext context, AsyncSnapshot<PositionData> snapshot) {
           return snapshot.hasData
               ? CustomPaint(

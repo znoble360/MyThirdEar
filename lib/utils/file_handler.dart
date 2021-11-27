@@ -25,7 +25,7 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
 
     if (result == null) {
       // User did not select a file, don't do anything.
-      return null;
+      return new AudioFile("", "", "", waveformFileController, "", "", "");
     }
 
     file = result.files.first;
@@ -56,14 +56,16 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
     String predictionPath = '$dirPath/prediction.csv';
 
     // Run FFmpeg on this single file and store it in app data folder
-    String convertToMp3Command = '-i ${file.path} $audioMP3Path';
+    String convertToMp3Command = '-i "${file.path}" $audioMP3Path';
     FFmpegKit.executeAsync(convertToMp3Command, (session) async {
       await session.getReturnCode();
     });
 
     // Generate waveform binary data.
     String generateWaveformBinDataCmd =
-        '-i ${file.path} -v quiet -ac 1 -filter:a aresample=1000 -map 0:a -c:a pcm_s16le -f data $waveformBinPath';
+        '-i "${file.path}" -v quiet -ac 1 -filter:a aresample=1000 -map 0:a -c:a pcm_s16le -f data $waveformBinPath';
+
+    print(generateWaveformBinDataCmd);
 
     FFmpegKit.executeAsync(generateWaveformBinDataCmd, (session) async {
       print("Generating wav file");
@@ -72,7 +74,7 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
       if (ReturnCode.isSuccess(returnCode)) {
         waveformFileController.add(waveformBinPath);
       } else {
-        print("Error");
+        print("Error generating waveform file controller");
       }
     });
 
@@ -94,7 +96,7 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
     });
 
     // Convert to WAV
-    String convertToWavCommand = '-i ${file.path} $audioWAVpath';
+    String convertToWavCommand = '-i "${file.path}" $audioWAVpath';
     FFmpegKit.executeAsync(convertToWavCommand, (session) async {
       await session.getReturnCode();
     });
