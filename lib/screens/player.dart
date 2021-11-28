@@ -2,7 +2,6 @@ import 'package:MyThirdEar/cards/pitch.dart';
 import 'package:MyThirdEar/cards/speed.dart';
 import 'package:MyThirdEar/screens/music_player_screen.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -21,6 +20,7 @@ class MusicPlayer extends StatefulWidget {
   final AudioFile audioFile;
   MusicPlayerScreenState musicPlayerScreenState;
   MusicPlayer({required this.audioFile, required this.musicPlayerScreenState});
+  var callback;
 
   @override
   _MusicPlayerPlayState createState() => _MusicPlayerPlayState();
@@ -31,6 +31,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
   late AudioPlayer _player;
   var _audioFile;
   var _appDocDir;
+  var _callback;
   var loopingMode;
   late Duration loopingStart;
   late Duration loopingEnd;
@@ -49,6 +50,7 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     _audioFile = widget.audioFile;
     loopingMode = "off";
     loopingError = false;
+    _callback = pauseAudioOnExit;
 
     widget.musicPlayerScreenState.waveformConfig.positionDataStream =
         Rx.combineLatest3<Duration, Duration, Duration?, PositionData>(
@@ -66,6 +68,8 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     _appDocDir = await getApplicationDocumentsDirectory();
     final session = await AudioSession.instance;
     await session.configure(AudioSessionConfiguration.speech());
+
+    widget.callback = _callback;
 
     try {
       String applicationDirectory = _audioFile.filepath;
@@ -97,6 +101,10 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     if (state == AppLifecycleState.paused) {
       _player.stop();
     }
+  }
+
+  void pauseAudioOnExit() {
+    _player.pause();
   }
 
   void setStartLoop(Duration position) {

@@ -51,6 +51,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           ListTile(
             title: Text("Return Home Page"),
             onTap: () {
+              _player.callback();
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -75,31 +76,30 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           StreamBuilder<String>(
-                    stream: _player.audioFile.waveformFileController.stream,
-                    builder: (BuildContext __context,
-                        AsyncSnapshot<String> __snapshot) {
-                      if (hideRTA)
-                        return SizedBox(
-                        height: 200,
-                        child: FutureBuilder<WaveformData>(
-                          future: loadWaveformData(__snapshot.data!),
-                          builder:
-                              (context, AsyncSnapshot<WaveformData> snapshot) {
-                            if (snapshot.hasData) {
-                              return PaintedWaveform(
-                                sampleData: snapshot.data!,
-                                config: waveformConfig,
-                              );
-                            }
-                            return Container(
-                              height: 10,
-                              child: CircularProgressIndicator(),
-                            );
-                          },
-                        ));
-                      return SizedBox();
-                    },
-                  ),
+            stream: _player.audioFile.waveformFileController.stream,
+            builder:
+                (BuildContext __context, AsyncSnapshot<String> __snapshot) {
+              if (hideRTA)
+                return SizedBox(
+                    height: 200,
+                    child: FutureBuilder<WaveformData>(
+                      future: loadWaveformData(__snapshot.data!),
+                      builder: (context, AsyncSnapshot<WaveformData> snapshot) {
+                        if (snapshot.hasData) {
+                          return PaintedWaveform(
+                            sampleData: snapshot.data!,
+                            config: waveformConfig,
+                          );
+                        }
+                        return Container(
+                          height: 10,
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    ));
+              return SizedBox();
+            },
+          ),
           Container(
             height: 220,
             child: _player,
@@ -142,7 +142,6 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
               : Flexible(
                   flex: 1,
                   child: SingleChildScrollView(
-                    reverse: true,
                     child: Image.asset(
                       'assets/images/demo.jpg',
                       height: 500,
