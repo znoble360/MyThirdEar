@@ -315,9 +315,9 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
                                       s.substring(s.lastIndexOf(':') + 2);
 
                                   setStartLoop(
-                                      Duration(seconds: int.parse(start)));
+                                      Duration(milliseconds: int.parse(start)));
 
-                                  setEndLoop(Duration(seconds: int.parse(end)));
+                                  setEndLoop(Duration(milliseconds: int.parse(end)));
 
                                   loopingMode = "saved loop";
 
