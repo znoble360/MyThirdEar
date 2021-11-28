@@ -74,7 +74,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
       )),
       body: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           StreamBuilder<String>(
             stream: _player.audioFile.waveformFileController.stream,
@@ -131,13 +131,14 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
             ],
           ),
           hideRTA
-              ? SizedBox(
-                  height: 70,
+              ? Flexible(
+                  child: Container(
+                  height: 80,
                   child: RTACard(_player.audioFile.predictionPath,
                       waveformConfig: waveformConfig,
-                      height: 70,
+                      height: 80,
                       width: MediaQuery.of(context).size.width),
-                )
+                ))
               : SizedBox(),
           !hideRTA
               ? Flexible(
