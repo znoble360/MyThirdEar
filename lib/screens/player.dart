@@ -187,8 +187,9 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
   // Call to store the durations and name as a loop.
   void saveLoop(Duration start, Duration end, String res) {
     // Integers are easier to work with
-    int starting = start.inSeconds;
-    int ending = end.inSeconds;
+    int starting = start.inMilliseconds;
+    int ending = end.inMilliseconds;
+    print(starting.toString() + " " + ending.toString());
 
     // Get the filepath for the json file
     var jsonPath =
