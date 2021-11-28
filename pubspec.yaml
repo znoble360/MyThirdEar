@@ -51,6 +51,7 @@ dependencies:
   file_picker: ^4.0.2
   path_provider: ^2.0.4
   crypto: ^3.0.1
+  prompt_dialog: ^1.0.6
 
 dev_dependencies:
   flutter_test:
