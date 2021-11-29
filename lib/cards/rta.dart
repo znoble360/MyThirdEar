@@ -43,8 +43,10 @@ class _RTACardState extends State<RTACard> {
         builder: (BuildContext context, AsyncSnapshot<PositionData> snapshot) {
           return snapshot.hasData
               ? CustomPaint(
-                  painter: RTAPainter(widget
-                      .data[getMapIndexFromPositionData(snapshot.data!)]!
+                  painter: RTAPainter(widget.data[getMapIndexFromPositionData(
+                          snapshot.data!,
+                          widget.waveformConfig.startPercentage,
+                          widget.waveformConfig.endPercentage)]!
                       .skip(3)
                       .map((e) => e as double)
                       .toList()),
@@ -55,11 +57,16 @@ class _RTACardState extends State<RTACard> {
     );
   }
 
-  int getMapIndexFromPositionData(PositionData positionData) {
+  int getMapIndexFromPositionData(
+      PositionData positionData, double startPercentage, double endPercentage) {
     double percent = positionData.position.inMilliseconds /
         positionData.duration.inMilliseconds;
 
-    return ((widget.data.length - 1) * percent).floor();
+    int length =
+        ((endPercentage - startPercentage) * widget.data.length).floor() - 1;
+
+    int firstData = (widget.data.length * startPercentage).floor();
+    return (length * percent).floor() + firstData;
   }
 }
 
