@@ -70,6 +70,9 @@ class _LibraryState extends State<Library> {
       _addAudioFileToHive(file);
       setState(() {});
 
+      // Run prediction
+      file.runPrediction(_appDocDir);
+
       // If we got a new file return true
       return true;
     }
@@ -274,18 +277,23 @@ class _MyListItemState extends State<_MyListItem> {
 
     return GestureDetector(
         onTap: () {
-          String rtaPredictionPath = '${appDocDir.path}/${item.predictionPath}';
-          String spectrogramImagePath =
-              '${appDocDir.path}/${item.spectrogramPath}';
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MusicPlayerScreen(
-                  audioFile: item,
-                  rtaPredictionPath: rtaPredictionPath,
-                  spectrogramImagePath: spectrogramImagePath),
-            ),
-          );
+          if (item.predictionFinished) {
+            String rtaPredictionPath =
+                '${appDocDir.path}/${item.predictionPath}';
+            String spectrogramImagePath =
+                '${appDocDir.path}/${item.spectrogramPath}';
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MusicPlayerScreen(
+                    audioFile: item,
+                    rtaPredictionPath: rtaPredictionPath,
+                    spectrogramImagePath: spectrogramImagePath),
+              ),
+            );
+          } else {
+            _showLoadingDialog();
+          }
         },
         child: Container(
           padding: const EdgeInsets.only(right: 15, left: 15, bottom: 10),

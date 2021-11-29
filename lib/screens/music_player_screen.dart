@@ -20,7 +20,10 @@ class MusicPlayerScreen extends StatefulWidget {
   final String rtaPredictionPath;
   final String spectrogramImagePath;
 
-  MusicPlayerScreen({required this.audioFile, required this.rtaPredictionPath, required this.spectrogramImagePath});
+  MusicPlayerScreen(
+      {required this.audioFile,
+      required this.rtaPredictionPath,
+      required this.spectrogramImagePath});
 
   @override
   MusicPlayerScreenState createState() => MusicPlayerScreenState();
@@ -168,13 +171,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     feedback: false,
                   ),
                 )
-              : Container(
-                  height: 82,
-                  child: Image.asset(
-                    'assets/images/piano.png',
-                    fit: BoxFit.fill,
-                  ),
-                )
+              : SizedBox(),
         ],
       ),
     );

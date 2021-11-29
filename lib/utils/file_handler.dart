@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:MyThirdEar/frequency_analyzer.dart';
 import 'package:MyThirdEar/wav_parser.dart';
 import 'package:crypto/crypto.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
@@ -55,12 +56,6 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
     String specImagePath = '$dirPath/spectrogram.png';
     String predictionPath = '$dirPath/prediction.csv';
 
-    // Run FFmpeg on this single file and store it in app data folder
-    String convertToMp3Command = '-i "${file.path}" $audioMP3Path';
-    FFmpegKit.executeAsync(convertToMp3Command, (session) async {
-      await session.getReturnCode();
-    });
-
     // Generate waveform binary data.
     String generateWaveformBinDataCmd =
         '-i "${file.path}" -v quiet -ac 1 -filter:a aresample=1000 -map 0:a -c:a pcm_s16le -f data $waveformBinPath';
@@ -75,22 +70,6 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
         waveformFileController.add(waveformBinPath);
       } else {
         print("Error generating waveform file controller");
-      }
-    });
-
-    String generatePredictionBinCmd =
-        '-i "${file.path}" -v quiet -ac 1 -filter:a aresample=44100 -map 0:a -c:a pcm_s16le -f data $notePredictionBinPath';
-
-    FFmpegKit.executeAsync(generatePredictionBinCmd, (session) async {
-      print("Trying to predict note");
-      final returnCode = await session.getReturnCode();
-
-      if (!ReturnCode.isSuccess(returnCode)) {
-        print("Error generating prediction bin");
-      }
-
-      if (ReturnCode.isSuccess(returnCode)) {
-        processNotePrediction(file.path!, notePredictionBinPath, specImagePath, predictionPath, dirPath);
       }
     });
 
@@ -132,7 +111,12 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
         relativeWaveformBinPath,
         relativeSpecImagePath,
         relativePredictionPath);
+
+    audioFile.predictionFinished = false;
+    audioFile.hash = md5Hash;
+    audioFile.originalPath = file.path!;
   } catch (e) {
+    print("Error loading audio source: $e");
     print("Error loading audio source: $e");
   }
 
@@ -155,25 +139,4 @@ class Song {
   Map toJson() => {
         'name': name,
       };
-}
-
-processNotePrediction(String audioFileName, String outputFileName,
-    String specImagePath, String predictionPath, String dirPath) {
-  print("Making bin file");
-  File binFile = File(outputFileName);
-
-  print("Initializing freqs");
-  // initialize an instance of Frequencies using the generated binFile
-  Frequencies freq = Frequencies(binFile);
-
-  print("Prediction path = " + predictionPath);
-  print("Spec Image path = " + specImagePath);
-
-  // generates the predictions array csv at predOutputLocation
-  freq.generatePred(predictionPath);
-
-  // generates the spectrograph png at specOutputLocation
-  freq.generateSpec(specImagePath);
-
-  File('$dirPath/finished').create();
 }
