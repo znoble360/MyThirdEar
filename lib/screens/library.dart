@@ -12,6 +12,7 @@ import 'package:MyThirdEar/utils/file_handler.dart';
 import 'package:path_provider/path_provider.dart';
 // ignore: implementation_imports
 import 'package:provider/src/provider.dart';
+import 'package:prompt_dialog/prompt_dialog.dart';
 
 class Library extends StatefulWidget {
   const Library({Key? key}) : super(key: key);
@@ -184,7 +185,6 @@ class _LibraryState extends State<Library> {
                       "My Library",
                       style: TextStyle(color: Colors.black, fontSize: 23),
                     ),
-                    titlePadding: EdgeInsets.only(right: 220, bottom: 10),
                   ),
                   backgroundColor: Colors.transparent,
                   pinned: true,
@@ -295,6 +295,27 @@ class _MyListItemState extends State<_MyListItem> {
                   IconButton(
                       onPressed: () => _showConfirmDeleteDialog(),
                       icon: Icon(Icons.delete)),
+                  IconButton(
+                    onPressed: () async {
+                      var response = await prompt(
+                          context,
+                          title: Text('Edit Song Name'),
+                          textOK: Text("Save"),
+                          hintText: 'Enter Name here');
+                      if(response != null){
+                        AudioFileData newAudioFile = new AudioFileData(
+                            name: response,
+                            author: widget.currentBox.getAt(widget.index).author,
+                            filepath: widget.currentBox.getAt(widget.index).filepath,
+                            waveformBinPath: widget.currentBox.getAt(widget.index).waveformBinPath
+                        );
+                        widget.currentBox.putAt(widget.index, newAudioFile)!;
+                        setState(() {
+
+                        });
+                      }
+                    },
+                    icon: Icon(Icons.create_outlined)),
                   Padding(padding: EdgeInsets.only(right: 15)),
                 ],
               )),
