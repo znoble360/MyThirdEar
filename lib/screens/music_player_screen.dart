@@ -27,6 +27,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
   bool canVibrate = false;
   bool hideRTA = true;
   late MusicPlayer _player;
+  ScrollController _scrollController = ScrollController();
   WaveformConfig waveformConfig = WaveformConfig();
 
   @override
@@ -115,6 +116,13 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     onChanged: (value) {
                       setState(() {
                         hideRTA = value!;
+                        if (!hideRTA) {
+                          Timer.periodic(Duration(milliseconds: 100), (timer) {
+                            timer.cancel();
+                            _scrollController.jumpTo(
+                                _scrollController.position.maxScrollExtent);
+                          });
+                        }
                       });
                     })
               ],
@@ -140,15 +148,24 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                   ],
                 )
               : Flexible(
-                  flex: 1,
-                  child: SingleChildScrollView(
-                    reverse: true,
-                    child: Image.asset(
-                      'assets/images/demo.jpg',
-                      height: 500,
-                      fit: BoxFit.fill,
+                flex: 1,
+                  child: Container(
+                    decoration: new BoxDecoration(color: Colors.black),
+                      height: MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width,
+                      child: SingleChildScrollView(
+                        reverse:true,
+                        controller: _scrollController,
+                        child: Container(
+                          padding: EdgeInsets.only(top: 200),
+                          child: Image.asset(
+                            'assets/images/demo.jpg',
+                            height: MediaQuery.of(context).size.height,
+                            fit: BoxFit.fill,
+                        ),
+                      ),
                     ),
-                  ),
+                  )
                 ),
           hideRTA
               ? Container(
@@ -162,7 +179,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                   ),
                 )
               : Container(
-                  height: 82,
+                  height: 90,
                   child: Image.asset(
                     'assets/images/piano.png',
                     fit: BoxFit.fill,
