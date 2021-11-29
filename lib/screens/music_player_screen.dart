@@ -14,11 +14,14 @@ import 'package:MyThirdEar/screens/player.dart';
 import 'package:MyThirdEar/ui/common/index.dart';
 import 'package:MyThirdEar/ui/common/piano_view.dart';
 import 'package:MyThirdEar/utils/waveform.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   final AudioFile audioFile;
+  final String rtaPredictionPath;
+  final String spectrogramImagePath;
 
-  MusicPlayerScreen({required this.audioFile});
+  MusicPlayerScreen({required this.audioFile, required this.rtaPredictionPath, required this.spectrogramImagePath});
 
   @override
   MusicPlayerScreenState createState() => MusicPlayerScreenState();
@@ -26,6 +29,7 @@ class MusicPlayerScreen extends StatefulWidget {
 
 class MusicPlayerScreenState extends State<MusicPlayerScreen>
     with WidgetsBindingObserver {
+  var _appDocDir;
   bool canVibrate = false;
   bool hideRTA = true;
   late MusicPlayer _player;
@@ -135,7 +139,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
               ? Flexible(
                   child: Container(
                   height: 80,
-                  child: RTACard(_player.audioFile.predictionPath,
+                  child: RTACard(widget.rtaPredictionPath,
                       waveformConfig: waveformConfig,
                       height: 80,
                       width: MediaQuery.of(context).size.width),
@@ -147,7 +151,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                   child: SingleChildScrollView(
                     reverse: true,
                     child: Image.file(
-                      new File(_player.audioFile.spectrogramPath),
+                      new File(widget.spectrogramImagePath),
                       height: 500,
                       width: MediaQuery.of(context).size.width,
                       fit: BoxFit.fill,

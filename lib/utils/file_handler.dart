@@ -79,19 +79,19 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
     });
 
     String generatePredictionBinCmd =
-        '-i ${file.path} -v quiet -ac 1 -filter:a aresample=44100 -map 0:a -c:a pcm_s16le -f data $notePredictionBinPath';
+        '-i "${file.path}" -v quiet -ac 1 -filter:a aresample=44100 -map 0:a -c:a pcm_s16le -f data $notePredictionBinPath';
 
     FFmpegKit.executeAsync(generatePredictionBinCmd, (session) async {
       print("Trying to predict note");
       final returnCode = await session.getReturnCode();
 
       if (!ReturnCode.isSuccess(returnCode)) {
-        print("Error");
+        print("Error generating prediction bin");
       }
 
       if (ReturnCode.isSuccess(returnCode)) {
         processNotePrediction(
-            file.path!, notePredictionBinPath, specImagePath, predictionPath);
+            file.path!, notePredictionBinPath, specImagePath, predictionPath, dirPath);
       }
     });
 
@@ -122,6 +122,8 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
 
     String relativeAudioMP3Path = '$md5Hash/audio.mp3';
     String relativeWaveformBinPath = '$md5Hash/waveform.bin';
+    String relativeSpecImagePath = '$md5Hash/spectrogram.png';
+    String relativePredictionPath = '$md5Hash/prediction.csv';
 
     audioFile = new AudioFile(
         file.name,
@@ -129,8 +131,8 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
         relativeAudioMP3Path,
         waveformFileController,
         relativeWaveformBinPath,
-        specImagePath,
-        predictionPath);
+        relativeSpecImagePath,
+        relativePredictionPath);
   } catch (e) {
     print("Error loading audio source: $e");
   }
@@ -157,7 +159,7 @@ class Song {
 }
 
 processNotePrediction(String audioFileName, String outputFileName,
-    String specImagePath, String predictionPath) {
+    String specImagePath, String predictionPath, String dirPath) async {
   print("Making bin file");
   File binFile = File(outputFileName);
 
@@ -173,4 +175,6 @@ processNotePrediction(String audioFileName, String outputFileName,
 
   // generates the spectrograph png at specOutputLocation
   freq.generateSpec(specImagePath);
+
+  File processingFinishedFile = await File('$dirPath/finished').create();
 }
