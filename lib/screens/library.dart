@@ -182,7 +182,6 @@ class _LibraryState extends State<Library> {
                       "My Library",
                       style: TextStyle(color: Colors.black, fontSize: 23),
                     ),
-                    titlePadding: EdgeInsets.only(right: 220, bottom: 10),
                   ),
                   backgroundColor: Colors.transparent,
                   pinned: true,
