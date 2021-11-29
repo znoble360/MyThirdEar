@@ -74,7 +74,7 @@ class _LibraryState extends State<Library> {
       return true;
     }
     setState(() {});
-    
+
     // if it's a duplicate file, return false and show the dialog box
     return false;
   }
@@ -176,22 +176,22 @@ class _LibraryState extends State<Library> {
           backgroundColor: Color(0xFFCAE0EC),
         ),
         body: CustomScrollView(
-              slivers: [
-                _MyAppBar(),
-                SliverAppBar(
-                  automaticallyImplyLeading: false,
-                  flexibleSpace: FlexibleSpaceBar(
-                    title: Text(
-                      "My Library",
-                      style: TextStyle(color: Colors.black, fontSize: 23),
-                    ),
-                  ),
-                  backgroundColor: Colors.transparent,
-                  pinned: true,
+          slivers: [
+            _MyAppBar(),
+            SliverAppBar(
+              automaticallyImplyLeading: false,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  "My Library",
+                  style: TextStyle(color: Colors.black, fontSize: 23),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                getContentView()
-              ],
+              ),
+              backgroundColor: Colors.transparent,
+              pinned: true,
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            getContentView()
+          ],
         ),
         drawer: Drawer(
             child: ListView(
@@ -296,26 +296,33 @@ class _MyListItemState extends State<_MyListItem> {
                       onPressed: () => _showConfirmDeleteDialog(),
                       icon: Icon(Icons.delete)),
                   IconButton(
-                    onPressed: () async {
-                      var response = await prompt(
-                          context,
-                          title: Text('Edit Song Name'),
-                          textOK: Text("Save"),
-                          hintText: 'Enter Name here');
-                      if(response != null){
-                        AudioFileData newAudioFile = new AudioFileData(
+                      onPressed: () async {
+                        var response = await prompt(context,
+                            title: Text('Edit Song Name'),
+                            textOK: Text("Save"),
+                            hintText: 'Enter Name here');
+                        if (response != null) {
+                          AudioFileData newAudioFile = new AudioFileData(
                             name: response,
-                            author: widget.currentBox.getAt(widget.index).author,
-                            filepath: widget.currentBox.getAt(widget.index).filepath,
-                            waveformBinPath: widget.currentBox.getAt(widget.index).waveformBinPath
-                        );
-                        widget.currentBox.putAt(widget.index, newAudioFile)!;
-                        setState(() {
-
-                        });
-                      }
-                    },
-                    icon: Icon(Icons.create_outlined)),
+                            author:
+                                widget.currentBox.getAt(widget.index).author,
+                            filepath:
+                                widget.currentBox.getAt(widget.index).filepath,
+                            waveformBinPath: widget.currentBox
+                                .getAt(widget.index)
+                                .waveformBinPath,
+                            spectrogramPath: widget.currentBox
+                                .getAt(widget.index)
+                                .spectrogramPath,
+                            predictionPath: widget.currentBox
+                                .getAt(widget.index)
+                                .predictionPath,
+                          );
+                          widget.currentBox.putAt(widget.index, newAudioFile)!;
+                          setState(() {});
+                        }
+                      },
+                      icon: Icon(Icons.create_outlined)),
                   Padding(padding: EdgeInsets.only(right: 15)),
                 ],
               )),
