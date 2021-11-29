@@ -2,7 +2,6 @@ import 'package:MyThirdEar/cards/pitch.dart';
 import 'package:MyThirdEar/cards/speed.dart';
 import 'package:MyThirdEar/screens/music_player_screen.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -12,6 +11,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
 import 'package:MyThirdEar/utils/common.dart';
+
+import 'package:prompt_dialog/prompt_dialog.dart';
+import 'dart:io';
+import 'dart:convert';
 
 class MusicPlayer extends StatefulWidget {
   final AudioFile audioFile;
@@ -33,6 +36,8 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
   late Duration loopingStart;
   late Duration loopingEnd;
   var loopingError;
+
+  var response;
 
   @override
   void initState() {
@@ -102,22 +107,22 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
     _player.pause();
   }
 
-  void setStartLoop() {
+  void setStartLoop(Duration position) {
     setState(() {
       loopingMode = "start";
-      loopingStart = _player.position;
+      loopingStart = position;
     });
   }
 
-  void setEndLoop() async {
-    if (_player.position <= loopingStart) {
+  void setEndLoop(Duration position) async {
+    if (position <= loopingStart) {
       loopingError = true;
       showInvalidLoopDialog(context, loopingStart);
       return;
     }
     setState(() {
       loopingMode = "looping";
-      loopingEnd = _player.position;
+      loopingEnd = position;
     });
 
     widget.musicPlayerScreenState.setState(() {
@@ -178,61 +183,281 @@ class _MusicPlayerPlayState extends State<MusicPlayer>
             ));
   }
 
+  /* Kevin's methods */
+  // Call to store the durations and name as a loop.
+  void saveLoop(Duration start, Duration end, String res) {
+    // Integers are easier to work with
+    int starting = start.inMilliseconds;
+    int ending = end.inMilliseconds;
+    print(starting.toString() + " " + ending.toString());
+
+    // Get the filepath for the json file
+    var jsonPath =
+        _audioFile.filepath.substring(0, _audioFile.filepath.length - 10) +
+            '/info.json';
+    var fullPath = '${_appDocDir.path}/$jsonPath';
+
+    // Decode the json encoded object
+    var parsedJson = jsonDecode(File(fullPath.toString())
+        .readAsStringSync()
+        .toString()); // with decoding
+
+    // Add the saved loop if it doesn't exist.
+    if (parsedJson['$res'] == null) {
+      parsedJson['$res'] =
+          'start: ${starting.toString()},\n end: ${ending.toString()}';
+      print('added this saved loop: ' + parsedJson['$res']);
+    } else {
+      print('a saved loop exists with that name...');
+    }
+
+    // Encode the new json data and write to the file
+    String updateJson = jsonEncode(parsedJson);
+    File(fullPath.toString()).writeAsString(updateJson);
+
+    // Set the state to play that loop
+    setState(() {
+      loopingMode = "saved loop";
+    });
+  }
+
+  // Deletes the saved loop from the JSON file (stored loops)
+  void deleteLoop(String entry) {
+    // Decode the json file
+    var jsonPath =
+        _audioFile.filepath.substring(0, _audioFile.filepath.length - 10) +
+            '/info.json';
+    var fullPath = '${_appDocDir.path}/$jsonPath';
+    var parsedJson = jsonDecode(File(fullPath.toString())
+        .readAsStringSync()
+        .toString()); // with decoding
+
+    // Check if the saved loop exists. If so, delete it. Else there was an error.
+    if (parsedJson[entry] != null) {
+      parsedJson.remove(entry);
+    } else {
+      print(
+          'there was an error deleting that loop'); // does not exist or some other error
+    }
+
+    // Encode the updated JSON data and write it to the file
+    String updateJson = jsonEncode(parsedJson);
+    File(fullPath.toString()).writeAsStringSync(updateJson);
+  }
+
+  // Read saved loop from the json file to return to the user.
+  Map<String, String> getLoops() {
+    // Get JSON file path and decode the data -- could probably refactor this.
+    var jsonPath =
+        _audioFile.filepath.substring(0, _audioFile.filepath.length - 10) +
+            '/info.json';
+    var fullPath = '${_appDocDir.path}/$jsonPath';
+    var parsedJson =
+        jsonDecode(File(fullPath.toString()).readAsStringSync().toString());
+
+    // Returned loopMap containing saved loop from the JSON file
+    Map<String, String> newMap =
+        new Map<String, String>(); // need to return this loopMap...
+    parsedJson.forEach((k, v) => addToMap(newMap, k, v));
+
+    return newMap;
+  }
+
+  // Add saved loop to a loopMap to use in the player. Ignore the 'name' object.
+  void addToMap(Map<String, String> loopMap, String k, String v) {
+    if (k != 'name') {
+      loopMap.putIfAbsent(k, () => v);
+    }
+  }
+
+  // Display the saved loops in a dialog. A user can click on a saved loop, triggering the player to loop on that duration.
+  // Alternatively, the user can delete an audio file by clicking the trash icon.
+  void displayLoops(Map<String, String> loopMap) {
+    // If there are no saved loops available, tell the user.
+    if (loopMap.isEmpty) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text('No Loops Saved'),
+                content: SingleChildScrollView(
+                  child: ListBody(children: <Widget>[
+                    // maybe button
+                    TextButton(
+                        child: Text('Return'), // return to the player.
+                        onPressed: () {
+                          Navigator.pop(context);
+                        })
+                  ]),
+                ),
+              ));
+    } else {
+      // saved loops exist.
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text('Select a loop'),
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: <Widget>[
+                      // maybe button
+                      for (var i in loopMap.entries)
+                        Row(children: [
+                          Row(
+                            children: [
+                              TextButton(
+                                child: Text(i.key.toString()),
+                                // When clicked. Get the object and its durations to set the audio player.
+                                onPressed: () {
+                                  String s = i.value.toString();
+                                  String start = s.substring(
+                                      s.indexOf(':') + 2, s.indexOf(','));
+                                  String end =
+                                      s.substring(s.lastIndexOf(':') + 2);
+
+                                  setStartLoop(
+                                      Duration(milliseconds: int.parse(start)));
+
+                                  setEndLoop(Duration(milliseconds: int.parse(end)));
+
+                                  loopingMode = "saved loop";
+
+                                  // Exit the dialog.
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  // Delete this saved loop.
+                                  deleteLoop(i.key.toString());
+
+                                  // Retrieve saved loops and display them or exit the dialog.
+                                  Map<String, String> loops = getLoops();
+                                  if (loops.isNotEmpty) {
+                                    Navigator.pop(context);
+                                    displayLoops(loops);
+                                  } else {
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                icon: Icon(Icons.delete_forever),
+                              ),
+                            ],
+                          ),
+                        ])
+                    ],
+                  ),
+                ),
+              ));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-                body: Container(
-                    child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    StreamBuilder<PositionData>(
-                      stream: widget.musicPlayerScreenState.waveformConfig
-                          .positionDataStream,
-                      builder: (context, snapshot) {
-                        final positionData = snapshot.data;
-                        return SeekBar(
-                          duration: positionData?.duration ?? Duration.zero,
-                          position: positionData?.position ?? Duration.zero,
-                          bufferedPosition:
-                              positionData?.bufferedPosition ?? Duration.zero,
-                          onChangeEnd: (newPosition) {
-                            _player.seek(newPosition);
-                          },
-                        );
-                      },
-                    ),
-                    if (loopingMode == "off")
-                      Container(
-                          child: Align(
-                        alignment: Alignment.center,
-                        child: TextButton.icon(
-                            onPressed: () => setStartLoop(),
-                            icon: Icon(Icons.loop_outlined),
-                            label: Text("Start Loop")),
-                      )),
-                    if (loopingMode == "start")
-                      Container(
-                          child: Align(
-                              alignment: Alignment.center,
-                              child: TextButton.icon(
-                                  onPressed: () => setEndLoop(),
-                                  icon: Icon(Icons.loop_outlined),
-                                  label: Text("End Loop")))),
-                    if (loopingMode == "looping")
-                      Container(
-                          child: Align(
-                              alignment: Alignment.center,
-                              child: TextButton.icon(
-                                  onPressed: () => clearLoop(),
-                                  icon: Icon(Icons.cancel_outlined),
-                                  label: Text("Clear Loop")))),
-                    ControlButtons(_player),
-                  ],
-                )),
-        ));
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Container(
+            child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            StreamBuilder<PositionData>(
+              stream: widget
+                  .musicPlayerScreenState.waveformConfig.positionDataStream,
+              builder: (context, snapshot) {
+                final positionData = snapshot.data;
+                return SeekBar(
+                  duration: positionData?.duration ?? Duration.zero,
+                  position: positionData?.position ?? Duration.zero,
+                  bufferedPosition:
+                      positionData?.bufferedPosition ?? Duration.zero,
+                  onChangeEnd: (newPosition) {
+                    _player.seek(newPosition);
+                  },
+                );
+              },
+            ),
+            if (loopingMode == "off")
+              Container(
+                  child: Align(
+                      alignment: Alignment.center,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            // Open saved loops.
+                            TextButton.icon(
+                                onPressed: () {
+                                  // Retrieve and display saved loops.
+                                  Map<String, String> loops = getLoops();
+                                  displayLoops(loops);
+                                },
+                                icon: Icon(Icons.bookmarks_outlined),
+                                label: Text("Saved Loops")),
+
+                            // Create a new loop
+                            TextButton.icon(
+                                onPressed: () => setStartLoop(_player.position),
+                                icon: Icon(Icons.loop_outlined),
+                                label: Text("Start Loop")),
+                          ]))),
+            if (loopingMode == "start")
+              Container(
+                  child: Align(
+                      alignment: Alignment.center,
+                      child: TextButton.icon(
+                          onPressed: () => setEndLoop(_player.position),
+                          icon: Icon(Icons.loop_outlined),
+                          label: Text("End Loop")))),
+            if (loopingMode == "looping")
+
+              /// new: container, alignment in center, column to clear or save
+              Container(
+                  child: Align(
+                      alignment: Alignment.center,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            TextButton.icon(
+                                onPressed: () => clearLoop(),
+                                icon: Icon(Icons.cancel_outlined),
+                                label: Text("Clear Loop")),
+                            // User provides a name to save the loop.
+                            TextButton.icon(
+
+                                /// TO DO: May have to use a try catch if the user doesn't enter a name
+                                onPressed: () async {
+                                  response = await prompt(context);
+                                  print(response);
+                                  if (response == null) {
+                                    // do nothing
+                                  } else {
+                                    saveLoop(
+                                        loopingStart, loopingEnd, response);
+                                  }
+                                },
+                                icon: Icon(Icons.check),
+                                label: Text("Save Loop"))
+                          ]))),
+            // User is currently playing a saved loop. They have the option to return to the full song.
+            if (loopingMode == "saved loop")
+              Container(
+                  child: Align(
+                      alignment: Alignment.center,
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          // alignment: Alignment.center,
+                          children: [
+                            TextButton.icon(
+                                onPressed: () => clearLoop(),
+                                icon: Icon(Icons.cancel_outlined),
+                                label: Text("Clear Loop")),
+                          ]))),
+            ControlButtons(_player),
+          ],
+        )),
+      ),
+    );
   }
 }
 
@@ -275,11 +500,14 @@ class ControlButtons extends StatelessWidget {
                   StreamBuilder<SequenceState>(
                     // stream: player.sequenceStateStream,
                     builder: (context, snapshot) => IconButton(
-                      icon: Icon(Icons.skip_previous),
-                      onPressed:
-                          player.hasPrevious ? player.seekToPrevious : null,
-                    ),
-                  ),
+                        icon: Icon(Icons.replay_5),
+                        onPressed: () => { 
+                          if ((player.position.inSeconds - 5) >= 0) { 
+                      player.seek(Duration(seconds: player.position.inSeconds - 5))
+                      }
+                      else player.seek(Duration.zero)
+                    },
+                  )),
                 ],
               ),
             ),
@@ -330,8 +558,13 @@ class ControlButtons extends StatelessWidget {
               child: StreamBuilder<SequenceState>(
                 // stream: player.sequenceStateStream
                 builder: (context, snapshot) => IconButton(
-                  icon: Icon(Icons.skip_next),
-                  onPressed: player.hasNext ? player.seekToNext : null,
+                  icon: Icon(Icons.forward_5),
+                  onPressed: () => {
+                    if ((player.position.inSeconds + 5) <= player.duration!.inSeconds) { 
+                      player.seek(Duration(seconds: player.position.inSeconds + 5))
+                      }
+                      else player.seek(Duration.zero)
+                    },
                 ),
               ),
             ),
