@@ -53,6 +53,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           ListTile(
             title: Text("Return Home Page"),
             onTap: () {
+              _player.callback();
               Navigator.push(
                 context,
                 MaterialPageRoute(
