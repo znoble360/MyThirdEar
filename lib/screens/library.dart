@@ -254,10 +254,16 @@ class _MyListItem extends StatefulWidget {
 class _MyListItemState extends State<_MyListItem> {
   var audioFileData;
   var item;
+  var appDocDir;
 
   @override
   void initState() {
     super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    appDocDir = await getApplicationDocumentsDirectory();
   }
 
   @override
@@ -268,10 +274,16 @@ class _MyListItemState extends State<_MyListItem> {
 
     return GestureDetector(
         onTap: () {
+          String rtaPredictionPath = '${appDocDir.path}/${item.predictionPath}';
+          String spectrogramImagePath =
+              '${appDocDir.path}/${item.spectrogramPath}';
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => MusicPlayerScreen(audioFile: item),
+              builder: (context) => MusicPlayerScreen(
+                  audioFile: item,
+                  rtaPredictionPath: rtaPredictionPath,
+                  spectrogramImagePath: spectrogramImagePath),
             ),
           );
         },
@@ -327,6 +339,26 @@ class _MyListItemState extends State<_MyListItem> {
                 ],
               )),
         ));
+  }
+
+  // use when user clicks file before it's done processing
+  void _showLoadingDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text("This file is still processing."),
+            content: new Text("Please wait a few minutes and try again."),
+            actions: <Widget>[
+              new TextButton(
+                child: new Text("Ok"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
   }
 
   void _showConfirmDeleteDialog() {
