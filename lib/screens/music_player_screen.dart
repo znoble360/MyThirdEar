@@ -157,7 +157,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
               : SizedBox(),
           hideRTA
               ? Container(
-                  height: 150,
+                  height: 185,
                   child: PianoView(
                     keyWidth: (80 * (0.5)),
                     showLabels: true,

@@ -71,14 +71,14 @@ class RTAPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     var paint1 = Paint()
-      ..color = Color(0xFF000000)
+      ..color = Colors.blue
       ..style = PaintingStyle.fill;
 
     var paint2 = Paint()
-      ..color = Color(0xFFFF0000)
+      ..color = Color(0xFF000000)
       ..style = PaintingStyle.fill;
 
-    double keyPadding = 2.0;
+    double keyPadding = 4.0;
     int numOfWhiteKeys = 7 * 7;
     double widthPerKey = (size.width / (numOfWhiteKeys));
     double sizeOfOctave = widthPerKey * 7;
@@ -86,31 +86,31 @@ class RTAPainter extends CustomPainter {
     double keyWidth = widthPerKey - keyPadding;
     double blackKeyWidth = widthPerKey - keyPadding;
 
-    HashSet<int> blackKeyLocations = new HashSet.from([1, 3, 6, 8, 10]);
+    Map<int, double> blackKeyLoc = {
+      1: (widthPerKey * 1 - blackKeyWidth / 2),
+      3: (widthPerKey * 2 - blackKeyWidth / 2),
+      6: (widthPerKey * 4 - blackKeyWidth / 2),
+      8: (widthPerKey * 5 - blackKeyWidth / 2),
+      10: (widthPerKey * 6 - blackKeyWidth / 2),
+    };
 
     int whiteCount = 0;
     for (int index = 0; index < data.length; index++) {
-      if (!blackKeyLocations.contains(index % 12)) {
+      if (!blackKeyLoc.containsKey(index % 12)) {
         canvas.drawRect(
             Offset((widthPerKey * whiteCount + keyPadding / 2).toDouble(),
                     size.height - size.height * data[index]) &
-                Size(keyWidth - keyPadding, size.height * data[index]),
+                Size(keyWidth, size.height * data[index]),
             paint1);
 
         whiteCount++;
-      }
-      /*
-       else {
+      } else {
         canvas.drawRect(
-            Offset(
-                    blackKeys[index % 12]! +
-                        (index ~/ 12 * sizeOfOctave) -
-                        keyPadding / 2,
-                    size.height - size.height * data[index] + 20) &
-                Size(blackKeyWidth - keyPadding, size.height * data[index]),
+            Offset((widthPerKey * whiteCount - blackKeyWidth / 2).toDouble(),
+                    size.height - size.height * data[index]) &
+                Size(blackKeyWidth, size.height * data[index]),
             paint2);
       }
-        */
     }
   }
 
