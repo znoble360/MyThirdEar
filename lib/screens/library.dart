@@ -12,6 +12,7 @@ import 'package:MyThirdEar/utils/file_handler.dart';
 import 'package:path_provider/path_provider.dart';
 // ignore: implementation_imports
 import 'package:provider/src/provider.dart';
+import 'package:prompt_dialog/prompt_dialog.dart';
 
 class Library extends StatefulWidget {
   const Library({Key? key}) : super(key: key);
@@ -30,7 +31,9 @@ class _LibraryState extends State<Library> {
         name: audioFile.name,
         author: audioFile.author,
         filepath: audioFile.filepath,
-        waveformBinPath: audioFile.waveformBinPath);
+        waveformBinPath: audioFile.waveformBinPath,
+        spectrogramPath: audioFile.spectrogramPath,
+        predictionPath: audioFile.predictionPath);
     box.add(newAudioFileData);
     print('newAudioFileData added to box!');
   }
@@ -67,11 +70,14 @@ class _LibraryState extends State<Library> {
       _addAudioFileToHive(file);
       setState(() {});
 
+      // Run prediction
+      file.runPrediction(_appDocDir);
+
       // If we got a new file return true
       return true;
     }
     setState(() {});
-    
+
     // if it's a duplicate file, return false and show the dialog box
     return false;
   }
@@ -173,23 +179,22 @@ class _LibraryState extends State<Library> {
           backgroundColor: Color(0xFFCAE0EC),
         ),
         body: CustomScrollView(
-              slivers: [
-                _MyAppBar(),
-                SliverAppBar(
-                  automaticallyImplyLeading: false,
-                  flexibleSpace: FlexibleSpaceBar(
-                    title: Text(
-                      "My Library",
-                      style: TextStyle(color: Colors.black, fontSize: 23),
-                    ),
-                    titlePadding: EdgeInsets.only(right: 220, bottom: 10),
-                  ),
-                  backgroundColor: Colors.transparent,
-                  pinned: true,
+          slivers: [
+            _MyAppBar(),
+            SliverAppBar(
+              automaticallyImplyLeading: false,
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text(
+                  "My Library",
+                  style: TextStyle(color: Colors.black, fontSize: 23),
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-                getContentView()
-              ],
+              ),
+              backgroundColor: Colors.transparent,
+              pinned: true,
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            getContentView()
+          ],
         ),
         drawer: Drawer(
             child: ListView(
@@ -203,6 +208,14 @@ class _LibraryState extends State<Library> {
                   return showMyDialog(context);
               },
             ),
+            ListTile(
+                leading: Icon(Icons.delete),
+                title: Text("Delete All Songs"),
+                onTap: () async {
+                  if (_appDocDir.existsSync()) {
+                    _appDocDir.deleteSync(recursive: true);
+                  }
+                }),
             ListTile(
               leading: Icon(Icons.settings),
               title: Text("Settings"),
@@ -244,10 +257,16 @@ class _MyListItem extends StatefulWidget {
 class _MyListItemState extends State<_MyListItem> {
   var audioFileData;
   var item;
+  var appDocDir;
 
   @override
   void initState() {
     super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    appDocDir = await getApplicationDocumentsDirectory();
   }
 
   @override
@@ -258,12 +277,23 @@ class _MyListItemState extends State<_MyListItem> {
 
     return GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MusicPlayerScreen(audioFile: item),
-            ),
-          );
+          if (item.predictionFinished) {
+            String rtaPredictionPath =
+                '${appDocDir.path}/${item.predictionPath}';
+            String spectrogramImagePath =
+                '${appDocDir.path}/${item.spectrogramPath}';
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MusicPlayerScreen(
+                    audioFile: item,
+                    rtaPredictionPath: rtaPredictionPath,
+                    spectrogramImagePath: spectrogramImagePath),
+              ),
+            );
+          } else {
+            _showLoadingDialog();
+          }
         },
         child: Container(
           padding: const EdgeInsets.only(right: 15, left: 15, bottom: 10),
@@ -285,10 +315,58 @@ class _MyListItemState extends State<_MyListItem> {
                   IconButton(
                       onPressed: () => _showConfirmDeleteDialog(),
                       icon: Icon(Icons.delete)),
+                  IconButton(
+                      onPressed: () async {
+                        var response = await prompt(context,
+                            title: Text('Edit Song Name'),
+                            textOK: Text("Save"),
+                            hintText: 'Enter Name here');
+                        if (response != null) {
+                          AudioFileData newAudioFile = new AudioFileData(
+                            name: response,
+                            author:
+                                widget.currentBox.getAt(widget.index).author,
+                            filepath:
+                                widget.currentBox.getAt(widget.index).filepath,
+                            waveformBinPath: widget.currentBox
+                                .getAt(widget.index)
+                                .waveformBinPath,
+                            spectrogramPath: widget.currentBox
+                                .getAt(widget.index)
+                                .spectrogramPath,
+                            predictionPath: widget.currentBox
+                                .getAt(widget.index)
+                                .predictionPath,
+                          );
+                          widget.currentBox.putAt(widget.index, newAudioFile)!;
+                          setState(() {});
+                        }
+                      },
+                      icon: Icon(Icons.create_outlined)),
                   Padding(padding: EdgeInsets.only(right: 15)),
                 ],
               )),
         ));
+  }
+
+  // use when user clicks file before it's done processing
+  void _showLoadingDialog() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: new Text("This file is still processing."),
+            content: new Text("Please wait a few minutes and try again."),
+            actions: <Widget>[
+              new TextButton(
+                child: new Text("Ok"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
   }
 
   void _showConfirmDeleteDialog() {

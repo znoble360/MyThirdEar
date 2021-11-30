@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:MyThirdEar/cards/rta.dart';
 import 'package:MyThirdEar/models/library.dart';
 import 'package:MyThirdEar/models/waveformConfig.dart';
 import 'package:MyThirdEar/utils/common.dart';
@@ -15,8 +17,13 @@ import 'package:MyThirdEar/utils/waveform.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   final AudioFile audioFile;
+  final String rtaPredictionPath;
+  final String spectrogramImagePath;
 
-  MusicPlayerScreen({required this.audioFile});
+  MusicPlayerScreen(
+      {required this.audioFile,
+      required this.rtaPredictionPath,
+      required this.spectrogramImagePath});
 
   @override
   MusicPlayerScreenState createState() => MusicPlayerScreenState();
@@ -52,6 +59,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
           ListTile(
             title: Text("Return Home Page"),
             onTap: () {
+              _player.callback();
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -73,34 +81,33 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
       )),
       body: Column(
         mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           StreamBuilder<String>(
-                    stream: _player.audioFile.waveformFileController.stream,
-                    builder: (BuildContext __context,
-                        AsyncSnapshot<String> __snapshot) {
-                      if (hideRTA)
-                        return SizedBox(
-                        height: 200,
-                        child: FutureBuilder<WaveformData>(
-                          future: loadWaveformData(__snapshot.data!),
-                          builder:
-                              (context, AsyncSnapshot<WaveformData> snapshot) {
-                            if (snapshot.hasData) {
-                              return PaintedWaveform(
-                                sampleData: snapshot.data!,
-                                config: waveformConfig,
-                              );
-                            }
-                            return Container(
-                              height: 10,
-                              child: CircularProgressIndicator(),
-                            );
-                          },
-                        ));
-                      return SizedBox();
-                    },
-                  ),
+            stream: _player.audioFile.waveformFileController.stream,
+            builder:
+                (BuildContext __context, AsyncSnapshot<String> __snapshot) {
+              if (hideRTA)
+                return SizedBox(
+                    height: 200,
+                    child: FutureBuilder<WaveformData>(
+                      future: loadWaveformData(__snapshot.data!),
+                      builder: (context, AsyncSnapshot<WaveformData> snapshot) {
+                        if (snapshot.hasData) {
+                          return PaintedWaveform(
+                            sampleData: snapshot.data!,
+                            config: waveformConfig,
+                          );
+                        }
+                        return Container(
+                          height: 10,
+                          child: CircularProgressIndicator(),
+                        );
+                      },
+                    ));
+              return SizedBox();
+            },
+          ),
           Container(
             height: 220,
             child: _player,
@@ -129,47 +136,36 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
             ),
           ),
           hideRTA
-              ? Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      children: [
-                        Text('Estimated Chord'),
-                        Text('Cmaj7'),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text('Estimated BPM'),
-                        Text('117'),
-                      ],
-                    ),
-                  ],
-                )
+              ? Flexible(
+                  child: Container(
+                  height: 80,
+                  child: RTACard(widget.rtaPredictionPath,
+                      waveformConfig: waveformConfig,
+                      height: 80,
+                      width: MediaQuery.of(context).size.width),
+                ))
               : Flexible(
-                flex: 1,
+                  flex: 1,
                   child: Container(
                     decoration: new BoxDecoration(color: Colors.black),
-                      height: MediaQuery.of(context).size.height,
-                      width: MediaQuery.of(context).size.width,
-                      child: SingleChildScrollView(
-                        reverse:true,
-                        controller: _scrollController,
-                        child: Container(
-                          padding: EdgeInsets.only(top: 200),
-                          child: Image.asset(
-                            'assets/images/demo.jpg',
-                            height: MediaQuery.of(context).size.height,
-                            fit: BoxFit.fill,
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    child: SingleChildScrollView(
+                      reverse: true,
+                      controller: _scrollController,
+                      child: Container(
+                        padding: EdgeInsets.only(top: 200),
+                        child: Image.file(
+                          new File(widget.spectrogramImagePath),
+                          height: MediaQuery.of(context).size.height,
+                          fit: BoxFit.fill,
                         ),
                       ),
                     ),
-                  )
-                ),
+                  )),
           hideRTA
               ? Container(
-                  height: 150,
+                  height: 185,
                   child: PianoView(
                     keyWidth: (80 * (0.5)),
                     showLabels: true,
@@ -184,7 +180,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     'assets/images/piano.png',
                     fit: BoxFit.fill,
                   ),
-                )
+                ),
         ],
       ),
     );

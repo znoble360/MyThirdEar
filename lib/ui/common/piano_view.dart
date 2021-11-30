@@ -25,10 +25,8 @@ class PianoView extends StatefulWidget {
 
 class _PianoViewState extends State<PianoView> {
   int _currentOctave = 3;
-  late ScrollController _controller = ScrollController(
-    initialScrollOffset: 0.0,
-    keepScrollOffset: true
-  );
+  late ScrollController _controller =
+      ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
 
   @override
   void initState() {
@@ -38,27 +36,24 @@ class _PianoViewState extends State<PianoView> {
 
   @override
   Widget build(BuildContext context) {
-    return Flex(
-      direction: Axis.vertical,
-      children: <Widget>[
-        Flexible(
-          flex: 1,
-          child: Container(
-            child: PianoSlider(
-              theme: ThemeUtils(context),
-              keyWidth: widget.keyWidth,
-              currentOctave: _currentOctave,
-              octaveTapped: (int octave) {
-                setState(() {
-                  _currentOctave = octave;
-                });
-                _controller.jumpTo(currentOffset);
-              },
-            ),
+    return Column(
+      children: [
+        Container(
+          height: 35,
+          child: PianoSlider(
+            theme: ThemeUtils(context),
+            keyWidth: widget.keyWidth,
+            currentOctave: _currentOctave,
+            octaveTapped: (int octave) {
+              setState(() {
+                _currentOctave = octave;
+              });
+              _controller.jumpTo(currentOffset);
+            },
           ),
         ),
-        Flexible(
-          flex: 8,
+        Container(
+          height: 150,
           child: PianoSection(
             controller: _controller,
             disableScroll: widget.disableScroll,
