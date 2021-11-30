@@ -34,6 +34,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
   bool canVibrate = false;
   bool hideRTA = true;
   late MusicPlayer _player;
+  ScrollController _scrollController = ScrollController();
   WaveformConfig waveformConfig = WaveformConfig();
 
   @override
@@ -111,30 +112,28 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
             height: 220,
             child: _player,
           ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                children: [
-                  Text(hideRTA ? 'Estimated Chord' : ''),
-                  Text(hideRTA ? 'Cmaj7' : ''),
-                ],
-              ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Hide Spectrogram'),
-                  Checkbox(
-                      value: hideRTA,
-                      onChanged: (value) {
-                        setState(() {
-                          hideRTA = value!;
-                        });
-                      }),
-                ],
-              ),
-            ],
+          Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Hide Spectrogram'),
+                Checkbox(
+                    value: hideRTA,
+                    onChanged: (value) {
+                      setState(() {
+                        hideRTA = value!;
+                        if (!hideRTA) {
+                          Timer.periodic(Duration(milliseconds: 100), (timer) {
+                            timer.cancel();
+                            _scrollController.jumpTo(
+                                _scrollController.position.maxScrollExtent);
+                          });
+                        }
+                      });
+                    })
+              ],
+            ),
           ),
           hideRTA
               ? Flexible(
@@ -145,21 +144,25 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                       height: 80,
                       width: MediaQuery.of(context).size.width),
                 ))
-              : SizedBox(),
-          !hideRTA
-              ? Flexible(
+              : Flexible(
                   flex: 1,
-                  child: SingleChildScrollView(
-                    reverse: true,
-                    child: Image.file(
-                      new File(widget.spectrogramImagePath),
-                      height: 500,
-                      width: MediaQuery.of(context).size.width,
-                      fit: BoxFit.fill,
+                  child: Container(
+                    decoration: new BoxDecoration(color: Colors.black),
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    child: SingleChildScrollView(
+                      reverse: true,
+                      controller: _scrollController,
+                      child: Container(
+                        padding: EdgeInsets.only(top: 200),
+                        child: Image.file(
+                          new File(widget.spectrogramImagePath),
+                          height: MediaQuery.of(context).size.height,
+                          fit: BoxFit.fill,
+                        ),
+                      ),
                     ),
-                  ),
-                )
-              : SizedBox(),
+                  )),
           hideRTA
               ? Container(
                   height: 185,
@@ -171,7 +174,13 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                     feedback: false,
                   ),
                 )
-              : SizedBox(),
+              : Container(
+                  height: 90,
+                  child: Image.asset(
+                    'assets/images/piano.png',
+                    fit: BoxFit.fill,
+                  ),
+                ),
         ],
       ),
     );
