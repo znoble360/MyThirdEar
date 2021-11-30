@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'audioFile.g.dart';
 
-// AudioFileData model for the Hive DB, generates audioFile.g.dart by running: 
+// AudioFileData model for the Hive DB, generates audioFile.g.dart by running:
 // flutter packages pub run build_runner build
 
 @HiveType(typeId: 1)
@@ -19,10 +19,17 @@ class AudioFileData {
   @HiveField(3)
   final String waveformBinPath;
 
-  AudioFileData({
-    required this.name,
-    required this.author,
-    required this.filepath,
-    required this.waveformBinPath
-  });
+  @HiveField(4)
+  final String spectrogramPath;
+
+  @HiveField(5)
+  final String predictionPath;
+
+  AudioFileData(
+      {required this.name,
+      required this.author,
+      required this.filepath,
+      required this.waveformBinPath,
+      required this.spectrogramPath,
+      required this.predictionPath});
 }

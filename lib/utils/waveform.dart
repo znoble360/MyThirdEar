@@ -153,7 +153,13 @@ class WaveformData {
 
   // scale the data from int values to float
   _scaleData() {
-    final max = pow(2, bits - 1).toDouble();
+    int max = 0;
+
+    for (var i = 0; i < data.length; i++) {
+      if (data[i] > max) {
+        max = data[i];
+      }
+    }
 
     final dataSize = data.length;
     _scaledData = List.filled(dataSize, 0.0);

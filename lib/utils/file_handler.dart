@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:MyThirdEar/frequency_analyzer.dart';
+import 'package:MyThirdEar/wav_parser.dart';
 import 'package:crypto/crypto.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_session.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/return_code.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
@@ -23,7 +26,7 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
 
     if (result == null) {
       // User did not select a file, don't do anything.
-      return new AudioFile("", "", "", waveformFileController, "");
+      return new AudioFile("", "", "", waveformFileController, "", "", "");
     }
 
     file = result.files.first;
@@ -49,12 +52,9 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
     String bookmarksPath = '$dirPath/bookmarks.json'; // path to bookmarks file
     String waveformBinPath = '$dirPath/waveform.bin';
     String infoJSONPath = '$dirPath/info.json';
-
-    // Run FFmpeg on this single file and store it in app data folder
-    String convertToMp3Command = '-i "${file.path}" $audioMP3Path';
-    FFmpegKit.executeAsync(convertToMp3Command, (session) async {
-      await session.getReturnCode();
-    });
+    String notePredictionBinPath = '$dirPath/prediction.bin';
+    String specImagePath = '$dirPath/spectrogram.png';
+    String predictionPath = '$dirPath/prediction.csv';
 
     // Generate waveform binary data.
     String generateWaveformBinDataCmd =
@@ -63,6 +63,7 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
     print(generateWaveformBinDataCmd);
 
     FFmpegKit.executeAsync(generateWaveformBinDataCmd, (session) async {
+      print("Generating wav file");
       final returnCode = await session.getReturnCode();
 
       if (ReturnCode.isSuccess(returnCode)) {
@@ -97,14 +98,25 @@ Future<AudioFile?> selectFileForPlayer(Directory appDocDir) async {
       print("error");
     }
 
-    print("mp3 command: " + convertToMp3Command);
-
     String relativeAudioMP3Path = '$md5Hash/audio.mp3';
     String relativeWaveformBinPath = '$md5Hash/waveform.bin';
+    String relativeSpecImagePath = '$md5Hash/spectrogram.png';
+    String relativePredictionPath = '$md5Hash/prediction.csv';
 
-    audioFile = new AudioFile(file.name, "author", relativeAudioMP3Path,
-        waveformFileController, relativeWaveformBinPath);
+    audioFile = new AudioFile(
+        file.name,
+        "author",
+        relativeAudioMP3Path,
+        waveformFileController,
+        relativeWaveformBinPath,
+        relativeSpecImagePath,
+        relativePredictionPath);
+
+    audioFile.predictionFinished = false;
+    audioFile.hash = md5Hash;
+    audioFile.originalPath = file.path!;
   } catch (e) {
+    print("Error loading audio source: $e");
     print("Error loading audio source: $e");
   }
 

@@ -43,9 +43,9 @@ class MyApp extends StatelessWidget {
     for (int i = 0; i < box.length; i++) {
       var currentAudioFile = box.getAt(i);
 
-    // get the full path to waveformBin file
-    String applicationDirectory = currentAudioFile.waveformBinPath;
-    String waveformBinPath = '${appDocDir.path}/$applicationDirectory';
+      // get the full path to waveformBin file
+      String applicationDirectory = currentAudioFile.waveformBinPath;
+      String waveformBinPath = '${appDocDir.path}/$applicationDirectory';
 
       // Link the waveform file controller to the waveform bin path
       var waveformFileController = new BehaviorSubject<String>();
@@ -56,7 +56,9 @@ class MyApp extends StatelessWidget {
           currentAudioFile.author,
           currentAudioFile.filepath,
           waveformFileController,
-          currentAudioFile.waveformBinPath));
+          currentAudioFile.waveformBinPath,
+          currentAudioFile.spectrogramPath,
+          currentAudioFile.predictionPath));
     }
 
     return MultiProvider(
