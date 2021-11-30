@@ -175,6 +175,10 @@ class _LibraryState extends State<Library> {
           onPressed: () async {
             if (await uploadAudioFile() == false) return showMyDialog(context);
           },
+          shape: RoundedRectangleBorder(
+         side: BorderSide(color: Colors.black, width: 1),
+         borderRadius: BorderRadius.all(Radius.circular(15))
+        ),
           icon: const Icon(Icons.file_upload, color: Colors.black),
           backgroundColor: Color(0xFFCAE0EC),
         ),
