@@ -154,7 +154,7 @@ class MusicPlayerScreenState extends State<MusicPlayerScreen>
                       reverse: true,
                       controller: _scrollController,
                       child: Container(
-                        padding: EdgeInsets.only(top: 200),
+                        padding: EdgeInsets.only(top: 350),
                         child: Image.file(
                           new File(widget.spectrogramImagePath),
                           height: MediaQuery.of(context).size.height,
