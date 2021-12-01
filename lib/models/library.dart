@@ -83,16 +83,17 @@ class AudioFile {
     });
   }
 
-  _processNotePrediction(String audioFileName, String outputFileName,
+  _processNotePrediction(String audioFilePath, String binOutputFilePath,
       String specImagePath, String predictionPath) async {
-    print("Making bin file");
-
-    print("Initializing freqs");
     // initialize an instance of Frequencies using the generated binFile
-    await doFreq(outputFileName, predictionPath, specImagePath);
+    FrequenciesData freqData = new FrequenciesData(
+      audioFilePath: audioFilePath,
+      binOutputFilePath: binOutputFilePath,
+      predictionPath: predictionPath,
+      specImagePath: specImagePath,
+    );
 
-    print("Prediction path = " + predictionPath);
-    print("Spec Image path = " + specImagePath);
+    await compute(generateFrequencyAnalysis, freqData);
 
     this.predictionFinished = true;
   }
