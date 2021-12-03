@@ -1,5 +1,8 @@
 # MyThirdEar
 
+### Download the APK!
+Link: https://drive.google.com/file/d/1xnugyR2KID2jXS7dSlVI6U9w1pw2lZta/view?usp=sharing
+
 ### App Description
 
 MyThirdEar is a mobile application with the objective of helping musicians transcribe music by providing some analysis tools to be used on an audio sample.
