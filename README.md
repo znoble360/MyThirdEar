@@ -17,8 +17,8 @@ The app will provide the ability to:
 ### Screenshots
 
 <p>
-    <img src="https://user-images.githubusercontent.com/50501047/187281484-7a453bb5-8dec-4dd1-b8a7-02a2a55e0123.jpg)" width="100"/>
-    <img src="https://user-images.githubusercontent.com/50501047/187281484-7a453bb5-8dec-4dd1-b8a7-02a2a55e0123.jpg" width="100"/>
+    <img src= "https://user-images.githubusercontent.com/50501047/187281484-7a453bb5-8dec-4dd1-b8a7-02a2a55e0123.jpg" width="100"/>
+    <img src= "https://user-images.githubusercontent.com/50501047/187281484-7a453bb5-8dec-4dd1-b8a7-02a2a55e0123.jpg" width="100"/>
     <img src = "https://user-images.githubusercontent.com/50501047/187281461-3a7d6d7d-7442-4aca-9609-94f453b0bb2d.jpg" width = "100"/>
 </p>
 
