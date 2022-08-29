@@ -15,9 +15,9 @@ The app will provide the ability to:
 - Perform a RTA (Real time Analysis) of the audio to display frequency data
 
 ### Screenshots
-![My Library](assets/images/My Library.jpg)
-![MyThirdEar](assets/images/MyThirdEar.jpg)
-![Playing Now](assets/images/Playing Now.jpg)
+![My Library](https://user-images.githubusercontent.com/50501047/187281484-7a453bb5-8dec-4dd1-b8a7-02a2a55e0123.jpg)
+![MyThirdEar](https://user-images.githubusercontent.com/50501047/187281424-7923f743-ef9a-416b-ab56-26f31cf70a81.jpg)
+![Playing Now](https://user-images.githubusercontent.com/50501047/187281461-3a7d6d7d-7442-4aca-9609-94f453b0bb2d.jpg)
 
 ## Development Quickstart
 
