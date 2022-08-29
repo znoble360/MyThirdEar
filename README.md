@@ -6,13 +6,11 @@ MyThirdEar is a mobile application with the objective of helping musicians trans
 
 ### Main Features
 
-The app will provide the ability to:
-
-- Upload an audio file
-- Adjust the speed of the audio
-- Adjust pitch of the audio
-- Loop sections of the audio
-- Perform a RTA (Real time Analysis) of the audio to display frequency data
+- Work with any audio or movie file
+- Adjust the speed and/or pitch of the song
+- Loop sections of the audio to practice
+- Real time Analysis of the audio for chord and note prediction
+- UI displays an interactable piano with predicted chords/notes that are highlighted
 
 ### Screenshots
 
