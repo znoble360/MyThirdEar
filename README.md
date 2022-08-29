@@ -14,6 +14,11 @@ The app will provide the ability to:
 - Loop sections of the audio
 - Perform a RTA (Real time Analysis) of the audio to display frequency data
 
+### Screenshots
+![My Library](assets/images/My Library.jpg)
+![MyThirdEar](assets/images/MyThirdEar.jpg)
+![Playing Now](assets/images/Playing Now.jpg)
+
 ## Development Quickstart
 
 **_Note_**: You will only be able to set up for iOS development if you are running MacOS.
